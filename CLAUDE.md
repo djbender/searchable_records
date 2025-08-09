@@ -42,3 +42,6 @@ bin/rspec
 - Case-insensitive matching (SQLite LIKE behavior)
 - Parameterized queries for security
 - ActiveRecord integration with custom class/instance methods
+
+## Code standards
+- Always check codecoverage.
