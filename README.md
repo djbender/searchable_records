@@ -107,6 +107,55 @@ Article.search(nil)          # Returns empty relation
 
 ## Performance
 
+SearchableRecords is optimized for production use with database-specific query optimizations and comprehensive performance tools.
+
+### Query Optimizations
+
+SearchableRecords automatically uses the most efficient query patterns for each database:
+
+**PostgreSQL**:
+- Case-insensitive: `ILIKE '%query%'` (native PostgreSQL operator)
+- Case-sensitive: `LIKE '%query%'` (PostgreSQL LIKE is case-sensitive)
+
+**MySQL**:
+- Case-insensitive: `LIKE '%query%' COLLATE utf8mb4_unicode_ci`
+- Case-sensitive: `LIKE '%query%' COLLATE utf8mb4_bin`
+
+**SQLite**:
+- Case-insensitive: `LOWER(column) LIKE '%query%'` 
+- Case-sensitive: `GLOB '*query*'` (SQLite-specific pattern matching)
+
+### Performance Tools
+
+SearchableRecords includes built-in performance analysis tools:
+
+```ruby
+# Benchmark search performance
+SearchableRecords::Performance.benchmark_search(User, "john", iterations: 1000)
+
+# Analyze query execution plan
+SearchableRecords::Performance.explain_search(User, "john")
+
+# Compare different search strategies
+SearchableRecords::Performance.compare_strategies(User, "john", iterations: 100)
+
+# Analyze memory usage
+SearchableRecords::Performance.analyze_memory_usage(User, "john", record_count: 500)
+```
+
+### ActiveRecord::Relation Chaining
+
+SearchableRecords returns proper ActiveRecord::Relation objects for full query chaining:
+
+```ruby
+# Chain with other ActiveRecord methods
+User.search("developer").where(active: true).order(:name).limit(10)
+
+# Lazy evaluation - queries only execute when needed
+relation = User.search("developer")
+results = relation.where(active: true).to_a  # Executes single optimized query
+```
+
 ### Database Indexes
 
 For optimal search performance, add database indexes to your searchable columns. SearchableRecords performs substring searches using `LIKE '%query%'` or `GLOB '*query*'` patterns, which require careful indexing strategy.

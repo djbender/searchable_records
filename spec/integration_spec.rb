@@ -213,6 +213,59 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
     end
   end
 
+  describe "ActiveRecord::Relation chaining" do
+    before do
+      TestModel.delete_all
+      @model1 = TestModel.create!(name: "Alice", description: "Developer")
+      @model2 = TestModel.create!(name: "Bob", description: "Designer")
+      @model3 = TestModel.create!(name: "Charlie", description: "Developer")
+    end
+
+    it "returns ActiveRecord::Relation for method chaining" do
+      relation = TestModel.search("Developer")
+      expect(relation).to be_a(ActiveRecord::Relation)
+      expect(relation).to respond_to(:where)
+      expect(relation).to respond_to(:order)
+      expect(relation).to respond_to(:limit)
+    end
+
+    it "supports chaining with where" do
+      results = TestModel.search("Developer").where(name: "Alice")
+      expect(results.count).to eq(1)
+      expect(results.first.name).to eq("Alice")
+    end
+
+    it "supports chaining with order" do
+      results = TestModel.search("Developer").order(:name)
+      expect(results.count).to eq(2)
+      expect(results.map(&:name)).to eq(["Alice", "Charlie"])
+    end
+
+    it "supports chaining with limit" do
+      results = TestModel.search("Developer").limit(1)
+      expect(results.count).to eq(1)
+    end
+
+    it "supports complex chaining" do
+      results = TestModel.search("Developer").where.not(name: "Alice").order(:name).limit(1)
+      expect(results.count).to eq(1)
+      expect(results.first.name).to eq("Charlie")
+    end
+
+    it "supports lazy evaluation" do
+      # Search should not execute until accessed
+      relation = TestModel.search("Developer")
+      expect(relation).to be_a(ActiveRecord::Relation)
+      
+      # Chain additional conditions
+      chained = relation.where(name: "Alice")
+      expect(chained).to be_a(ActiveRecord::Relation)
+      
+      # Only executes when accessed
+      expect(chained.to_a.count).to eq(1)
+    end
+  end
+
   describe "API improvements" do
     before do
       TestModel.delete_all

@@ -1,0 +1,145 @@
+#!/usr/bin/env ruby
+
+# Performance testing utility for SearchableRecords
+
+require 'bundler/setup'
+require 'active_record'
+require_relative '../lib/searchable_records'
+require_relative '../tools/performance'
+
+# Load the dummy Rails app for testing
+ENV['RAILS_ENV'] = 'test'
+require_relative '../spec/dummy/config/environment'
+
+# Create test model (use different name to avoid conflicts)
+class PerfTestModel < ActiveRecord::Base
+  self.table_name = 'test_models'
+  searchable
+end
+
+# Create table if it doesn't exist
+unless ActiveRecord::Base.connection.table_exists?('test_models')
+  ActiveRecord::Schema.define do
+    create_table :test_models do |t|
+      t.string :name
+      t.text :description
+      t.timestamps
+    end
+  end
+end
+
+def show_usage
+  puts <<~USAGE
+    SearchableRecords Performance Testing Utility
+    =============================================
+
+    Usage: #{$0} [command] [options]
+
+    Commands:
+      benchmark [query] [iterations]  - Benchmark search performance
+      explain [query]                 - Show query execution plan
+      compare [query] [iterations]    - Compare different search strategies
+      memory [query] [count]          - Analyze memory usage
+      setup [count]                   - Create test data
+      help                           - Show this help message
+
+    Examples:
+      #{$0} setup 1000                         # Create 1000 test records
+      #{$0} benchmark "test" 500               # Benchmark "test" query 500 times
+      #{$0} explain "search term"              # Show execution plan
+      #{$0} compare "user" 100                 # Compare strategies 100 times
+      #{$0} memory "data" 500                  # Analyze memory for 500 records
+
+    Environment Variables:
+      DATABASE_ADAPTER=postgresql              # Use PostgreSQL instead of SQLite
+  USAGE
+end
+
+def create_test_data(count)
+  puts "Creating #{count} test records..."
+  PerfTestModel.delete_all
+
+  count.times do |i|
+    PerfTestModel.create!(
+      name: "Test User #{i}",
+      description: "This is a description for test user number #{i}. It contains searchable content and various keywords like development, testing, performance, and optimization."
+    )
+  end
+
+  puts "✅ Created #{count} test records"
+  puts "Database: #{ActiveRecord::Base.connection.adapter_name}"
+  puts "Total records: #{PerfTestModel.count}"
+end
+
+def run_benchmark(query, iterations)
+  if PerfTestModel.count == 0
+    puts "❌ No test data found. Run: #{$0} setup 1000"
+    exit 1
+  end
+
+  SearchableRecords::Performance.benchmark_search(PerfTestModel, query, iterations: iterations)
+end
+
+def run_explain(query)
+  if PerfTestModel.count == 0
+    puts "❌ No test data found. Run: #{$0} setup 1000"
+    exit 1
+  end
+
+  SearchableRecords::Performance.explain_search(PerfTestModel, query)
+end
+
+def run_compare(query, iterations)
+  if PerfTestModel.count == 0
+    puts "❌ No test data found. Run: #{$0} setup 1000"
+    exit 1
+  end
+
+  SearchableRecords::Performance.compare_strategies(PerfTestModel, query, iterations: iterations)
+end
+
+def run_memory(query, count)
+  if PerfTestModel.count == 0
+    puts "❌ No test data found. Run: #{$0} setup 1000"
+    exit 1
+  end
+
+  SearchableRecords::Performance.analyze_memory_usage(PerfTestModel, query, record_count: count)
+end
+
+# Parse command line arguments
+command = ARGV[0] || 'help'
+
+case command.downcase
+when 'setup'
+  count = (ARGV[1] || '100').to_i
+  create_test_data(count)
+
+when 'benchmark'
+  query = ARGV[1] || 'test'
+  iterations = (ARGV[2] || '1000').to_i
+  run_benchmark(query, iterations)
+
+when 'explain'
+  query = ARGV[1] || 'test'
+  run_explain(query)
+
+when 'compare'
+  query = ARGV[1] || 'test'
+  iterations = (ARGV[2] || '100').to_i
+  run_compare(query, iterations)
+
+when 'memory'
+  query = ARGV[1] || 'test'
+  count = (ARGV[2] || '100').to_i
+  run_memory(query, count)
+
+when 'help', '--help', '-h'
+  show_usage
+
+else
+  puts "❌ Unknown command: #{command}"
+  puts
+  show_usage
+  exit 1
+end

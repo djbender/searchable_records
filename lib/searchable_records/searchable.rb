@@ -35,8 +35,8 @@ module SearchableRecords
             conditions << "#{table_name}.#{column_name} LIKE :#{param_key}"
             params[param_key] = "%#{query}%"
           when 'mysql2', 'trilogy'
-            # MySQL: Use BINARY for case-sensitive comparison
-            conditions << "#{table_name}.#{column_name} LIKE BINARY :#{param_key}"
+            # MySQL: Use COLLATE for case-sensitive comparison (more efficient than BINARY)
+            conditions << "#{table_name}.#{column_name} LIKE :#{param_key} COLLATE utf8mb4_bin"
             params[param_key] = "%#{query}%"
           else
             # Fallback: Use standard LIKE
@@ -44,9 +44,21 @@ module SearchableRecords
             params[param_key] = "%#{query}%"
           end
         else
-          # For case-insensitive search, use LOWER() on both sides for all databases
-          conditions << "LOWER(#{table_name}.#{column_name}) LIKE :#{param_key}"
-          params[param_key] = "%#{query.downcase}%"
+          # Database-specific case-insensitive search optimizations
+          case connection.adapter_name.downcase
+          when 'postgresql'
+            # PostgreSQL: Use ILIKE for optimal case-insensitive performance
+            conditions << "#{table_name}.#{column_name} ILIKE :#{param_key}"
+            params[param_key] = "%#{query}%"
+          when 'mysql2', 'trilogy'
+            # MySQL: Use COLLATE for case-insensitive search
+            conditions << "#{table_name}.#{column_name} LIKE :#{param_key} COLLATE utf8mb4_unicode_ci"
+            params[param_key] = "%#{query}%"
+          else
+            # SQLite and other databases: Use LOWER() for case-insensitive search
+            conditions << "LOWER(#{table_name}.#{column_name}) LIKE :#{param_key}"
+            params[param_key] = "%#{query.downcase}%"
+          end
         end
       end
 

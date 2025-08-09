@@ -99,17 +99,18 @@ RSpec.describe "SearchableRecords PostgreSQL Features", type: :integration do
   end
 
   describe "PostgreSQL performance features" do
-    it "supports ILIKE operator through case-insensitive search" do
+    it "uses native ILIKE operator for case-insensitive search" do
       TestModel.delete_all
-      TestModel.create!(name: "Performance Test", description: "ILIKE equivalent")
+      TestModel.create!(name: "Performance Test", description: "PostgreSQL ILIKE")
       
-      # Our case-insensitive implementation should work like ILIKE
+      # Our case-insensitive implementation should use ILIKE on PostgreSQL
       results = TestModel.search("performance")
       expect(results.count).to eq(1)
       
-      # Check the generated SQL uses LOWER() which provides ILIKE-like behavior
+      # Check the generated SQL uses ILIKE (PostgreSQL-specific optimization)
       sql = TestModel.search("performance").to_sql
-      expect(sql).to include("LOWER")
+      expect(sql).to include("ILIKE")
+      expect(sql).not_to include("LOWER")  # Should not use LOWER() anymore
     end
 
     it "handles special PostgreSQL characters correctly" do
