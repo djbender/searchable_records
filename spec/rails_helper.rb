@@ -1,6 +1,16 @@
 require "spec_helper"
 
 ENV["RAILS_ENV"] = "test"
+
+# Intercept and filter warnings before Rails loads
+original_warn = Warning.method(:warn)
+Warning.define_singleton_method(:warn) do |message|
+  # Skip mail gem "assigned but unused variable - testEof" warnings
+  unless message.include?("assigned but unused variable - testEof")
+    original_warn.call(message)
+  end
+end
+
 require File.expand_path("dummy/config/environment", __dir__)
 
 require "rspec/rails"
