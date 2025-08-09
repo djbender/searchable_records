@@ -6,19 +6,24 @@ SearchableRecords is a Rails gem that adds searchable functionality to ActiveRec
 ## Development Setup
 ```bash
 bundle install
-bundle exec rake spec
+bundle exec rspec
 ```
 
 ## Testing
-- Uses RSpec for testing framework
+- Uses RSpec for testing framework with custom `:integration` type
 - Includes dummy Rails app for integration testing
 - Run tests: `bundle exec rspec`
 - Test coverage includes both unit tests and Rails integration
+- All tests follow single `expect()` per test pattern
+- Shared database setup in `spec/support/database_setup.rb`
 
 ## Project Structure
 - `lib/` - Main gem code
+  - `lib/searchable_records.rb` - Main gem file
+  - `lib/searchable_records/searchable.rb` - Core functionality
 - `spec/` - Test suite
-- `spec/dummy/` - Dummy Rails app for integration testing
+  - `spec/support/` - Shared test helpers
+  - `spec/dummy/` - Dummy Rails app for integration testing
 - `searchable_records.gemspec` - Gem specification
 
 ## Key Commands
@@ -31,3 +36,9 @@ bundle exec rake spec
 2. Add/update tests in `spec/`
 3. Run test suite to verify changes
 4. Update version in gemspec if needed
+
+## Current Features
+- Substring search across string/text columns
+- Case-insensitive matching (SQLite LIKE behavior)
+- Parameterized queries for security
+- ActiveRecord integration with custom class/instance methods

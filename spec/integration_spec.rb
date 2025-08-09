@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "SearchableRecords Integration", type: :model do
+RSpec.describe "SearchableRecords Integration", type: :integration do
   include_context "database setup"
 
   describe "searchable method" do
