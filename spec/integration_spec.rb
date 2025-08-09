@@ -95,22 +95,46 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
   end
 
   describe "instance methods" do
-    let(:instance) { TestModel.new(name: "Test", description: "A test model") }
-
     it "adds searchable? instance method" do
+      instance = TestModel.new
       expect(instance).to respond_to(:searchable?)
     end
 
     it "adds search_data instance method" do
+      instance = TestModel.new
       expect(instance).to respond_to(:search_data)
     end
 
-    it "searchable? returns true" do
+    it "searchable? returns true for instance with content" do
+      instance = TestModel.new(name: "Test", description: "A test model")
       expect(instance.searchable?).to be true
     end
 
-    it "search_data returns nil (no-op)" do
-      expect(instance.search_data).to be_nil
+    it "searchable? returns false for instance with no content" do
+      instance = TestModel.new(name: "", description: nil)
+      expect(instance.searchable?).to be false
+    end
+
+    it "searchable? returns false for instance with only whitespace" do
+      instance = TestModel.new(name: "   ", description: "\t\n")
+      expect(instance.searchable?).to be false
+    end
+
+    it "searchable? returns true for instance with partial content" do
+      instance = TestModel.new(name: "Test", description: "")
+      expect(instance.searchable?).to be true
+    end
+
+    it "search_data returns hash of searchable fields" do
+      instance = TestModel.new(name: "Test", description: "A test model")
+      expected_data = { "name" => "Test", "description" => "A test model" }
+      expect(instance.search_data).to eq(expected_data)
+    end
+
+    it "search_data includes nil values" do
+      instance = TestModel.new(name: "Test", description: nil)
+      expected_data = { "name" => "Test", "description" => nil }
+      expect(instance.search_data).to eq(expected_data)
     end
   end
 end

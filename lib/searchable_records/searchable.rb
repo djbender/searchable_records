@@ -40,12 +40,18 @@ module SearchableRecords
 
   module InstanceMethods
     def searchable?
-      # Skeleton for checking if instance is searchable
-      true
+      # Check if this instance has any non-blank searchable content
+      self.class.searchable_fields.any? do |field|
+        value = send(field)
+        value.present? && value.to_s.strip.present?
+      end
     end
 
     def search_data
-      # Skeleton for extracting searchable data from instance
+      # Return hash of searchable fields and their values
+      self.class.searchable_fields.each_with_object({}) do |field, data|
+        data[field] = send(field)
+      end
     end
   end
 end
