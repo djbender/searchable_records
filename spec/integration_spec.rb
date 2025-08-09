@@ -38,54 +38,29 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
       expect(TestModel.searchable_fields).not_to include("id", "created_at", "updated_at")
     end
 
-    it "finds records with substring match in any column" do
+    it "searches across multiple columns" do
       results = TestModel.search("John Doe")
-      expect(results).to include(@model1, @model3)  # @model1 has "John Doe" in name, @model3 has "John Doe" in description
+      expect(results).to match_array([@model1, @model3])  # @model1 has "John Doe" in name, @model3 has "John Doe" in description
     end
 
-    it "excludes records without substring match" do
-      results = TestModel.search("John Doe")
-      expect(results).not_to include(@model2)
+    it "finds exact name matches" do
+      results = TestModel.search("Jane Smith")
+      expect(results).to match_array([@model2])
     end
 
-    it "finds records with exact name match" do
-      name_results = TestModel.search("Jane Smith")
-      expect(name_results).to include(@model2)
+    it "finds partial description matches" do
+      results = TestModel.search("designer")
+      expect(results).to match_array([@model2])
     end
 
-    it "excludes records without exact name match" do
-      name_results = TestModel.search("Jane Smith")
-      expect(name_results).not_to include(@model1, @model3)
-    end
-
-    it "finds records with partial description match" do
-      desc_results = TestModel.search("designer")
-      expect(desc_results).to include(@model2)
-    end
-
-    it "excludes records without partial description match" do
-      desc_results = TestModel.search("designer")
-      expect(desc_results).not_to include(@model1, @model3)
-    end
-
-    it "finds records with partial name matches" do
+    it "finds partial name matches" do
       results = TestModel.search("John")
-      expect(results).to include(@model1, @model3)  # Both contain "John"
+      expect(results).to match_array([@model1, @model3])  # Both contain "John"
     end
 
-    it "excludes records without partial name matches" do
-      results = TestModel.search("John")
-      expect(results).not_to include(@model2)
-    end
-
-    it "finds records with partial description matches" do
+    it "finds partial description matches with different query" do
       results = TestModel.search("developer")
-      expect(results).to include(@model1)
-    end
-
-    it "excludes records without partial description matches" do
-      results = TestModel.search("developer")
-      expect(results).not_to include(@model2, @model3)
+      expect(results).to match_array([@model1])
     end
 
     it "returns empty result for no matches" do
@@ -110,11 +85,12 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
 
     it "is case insensitive with lowercase queries" do
       results = TestModel.search("john")  # lowercase
+      expect(results).to match_array([@model1, @model3])  # SQLite LIKE is case-insensitive
     end
 
     it "is case insensitive with uppercase queries" do
       results = TestModel.search("DEVELOPER")  # uppercase
-      expect(results).to include(@model1)  # Matches "A developer"
+      expect(results).to match_array([@model1])  # Matches "A developer"
     end
   end
 
