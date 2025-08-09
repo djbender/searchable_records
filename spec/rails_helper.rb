@@ -23,9 +23,14 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = true
   config.infer_spec_type_from_file_location!
   config.filter_rails_from_backtrace!
-  
+
   # Define custom :integration type that aliases to :model
   config.define_derived_metadata(type: :integration) do |metadata|
     metadata[:type] = :model
+  end
+
+  # Suppress ActiveRecord migration logging
+  config.before(:suite) do
+    ActiveRecord::Migration.verbose = false
   end
 end
