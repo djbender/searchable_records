@@ -24,6 +24,9 @@ bin/rspec
 - `spec/` - Test suite
   - `spec/support/` - Shared test helpers
   - `spec/dummy/` - Dummy Rails app for integration testing
+- `docs/` - Documentation
+  - `docs/DATABASE_INDEXING.md` - Comprehensive indexing guide
+  - `docs/example_migrations/` - Example migration files
 - `searchable_records.gemspec` - Gem specification
 
 ## Key Commands
@@ -39,9 +42,11 @@ bin/rspec
 
 ## Current Features
 - Substring search across string/text columns
-- Case-insensitive matching (SQLite LIKE behavior)
+- Configurable case sensitivity (case-sensitive or case-insensitive)
+- Field scoping to search specific columns only
 - Parameterized queries for security
 - ActiveRecord integration with custom class/instance methods
+- Comprehensive database indexing documentation
 
 ## Code standards
 - Always check codecoverage.
