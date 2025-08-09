@@ -57,7 +57,7 @@ module SearchableRecords
           else
             # SQLite and other databases: Use LOWER() for case-insensitive search
             conditions << "LOWER(#{table_name}.#{column_name}) LIKE :#{param_key}"
-            params[param_key] = "%#{query.downcase}%"
+            params[param_key] = "%#{query.to_s.downcase}%"
           end
         end
       end

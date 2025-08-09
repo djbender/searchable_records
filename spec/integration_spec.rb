@@ -211,6 +211,60 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
       results = TestModel.search("   ")
       expect(results).to be_empty  # Should be treated as blank and return none
     end
+
+    it "handles tab-only queries as blank" do
+      expect(TestModel.search("\t")).to be_empty
+    end
+
+    it "handles newline-only queries as blank" do
+      expect(TestModel.search("\n")).to be_empty
+    end
+
+    it "handles carriage return newline queries as blank" do
+      expect(TestModel.search("\r\n")).to be_empty
+    end
+
+    it "handles false as blank query" do
+      expect(TestModel.search(false)).to be_empty
+    end
+
+    it "handles zero as non-blank query" do
+      TestModel.create!(name: "Value: 0", description: "Sample")
+      expect(TestModel.search(0)).not_to be_empty
+    end
+
+    it "handles string zero as non-blank query" do
+      TestModel.create!(name: "Test 0 content", description: "Sample")
+      expect(TestModel.search("0")).not_to be_empty
+    end
+
+    it "returns default config when class variable not set" do
+      model_class = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        extend SearchableRecords::Searchable
+        searchable
+      end
+
+      config = model_class.searchable_config
+      expect(config[:fields]).to be_nil
+    end
+
+    it "returns default case sensitivity when class variable not set" do
+      model_class = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        extend SearchableRecords::Searchable
+        searchable
+      end
+
+      config = model_class.searchable_config
+      expect(config[:case_sensitive]).to be false
+    end
+
+    it "handles empty config hash when class variable set to empty" do
+      TestModel.class_variable_set(:@@searchable_config, {})
+      config = TestModel.searchable_config
+      expect(config).to eq({})
+    end
   end
 
   describe "ActiveRecord::Relation chaining" do
@@ -256,11 +310,11 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
       # Search should not execute until accessed
       relation = TestModel.search("Developer")
       expect(relation).to be_a(ActiveRecord::Relation)
-      
+
       # Chain additional conditions
       chained = relation.where(name: "Alice")
       expect(chained).to be_a(ActiveRecord::Relation)
-      
+
       # Only executes when accessed
       expect(chained.to_a.count).to eq(1)
     end
@@ -281,7 +335,7 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
 
       let!(:case_insensitive_model_class) do
         Class.new(ActiveRecord::Base) do
-          self.table_name = "test_models" 
+          self.table_name = "test_models"
           searchable case_sensitive: false
         end
       end
@@ -323,7 +377,7 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
         end
       end
 
-      let!(:description_only_model_class) do  
+      let!(:description_only_model_class) do
         Class.new(ActiveRecord::Base) do
           self.table_name = "test_models"
           searchable fields: [:description]
@@ -367,13 +421,13 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
           self.table_name = "test_models"
           searchable fields: [:non_existent_field]
         end
-        
+
         expect(non_existent_model_class.searchable_fields).to be_empty
         expect(non_existent_model_class.search("test")).to be_empty
       end
     end
 
-    describe "combined configuration options" do  
+    describe "combined configuration options" do
       let!(:combined_model_class) do
         Class.new(ActiveRecord::Base) do
           self.table_name = "test_models"
@@ -399,6 +453,204 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
         results = combined_model_class.search("should not be searched")
         expect(results).to be_empty  # Description field should not be searched
       end
+    end
+  end
+
+  describe "database adapter specific behavior" do
+    before do
+      TestModel.delete_all
+      @model1 = TestModel.create!(name: "Test Content", description: "Sample Data")
+    end
+
+    it "handles SQLite case-sensitive search with GLOB" do
+      case_sensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: true
+      end
+
+      allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('sqlite')
+      relation = case_sensitive_model.search("Test")
+      expect(relation.to_sql).to include("GLOB")
+    end
+
+    it "handles SQLite3 case-sensitive search with GLOB" do
+      case_sensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: true
+      end
+
+      allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('sqlite3')
+      relation = case_sensitive_model.search("Test")
+      expect(relation.to_sql).to include("GLOB")
+    end
+
+    it "handles PostgreSQL case-sensitive search with LIKE" do
+      case_sensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: true
+      end
+
+      allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('postgresql')
+      expect(case_sensitive_model.search("Test")).not_to be_empty
+    end
+
+    it "handles MySQL2 case-sensitive search with COLLATE" do
+      case_sensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: true
+      end
+
+      allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('mysql2')
+      relation = case_sensitive_model.search("Test")
+      expect(relation.to_sql).to include("utf8mb4_bin")
+    end
+
+    it "handles Trilogy case-sensitive search with COLLATE" do
+      case_sensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: true
+      end
+
+      allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('trilogy')
+      relation = case_sensitive_model.search("Test")
+      expect(relation.to_sql).to include("utf8mb4_bin")
+    end
+
+    it "handles unknown adapter case-sensitive search with fallback LIKE" do
+      case_sensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: true
+      end
+
+      allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('unknown_adapter')
+      expect(case_sensitive_model.search("Test")).not_to be_empty
+    end
+
+    it "handles PostgreSQL case-insensitive search with ILIKE" do
+      case_insensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: false
+      end
+
+      allow(case_insensitive_model.connection).to receive(:adapter_name).and_return('postgresql')
+      relation = case_insensitive_model.search("test")
+      expect(relation.to_sql).to include("ILIKE")
+    end
+
+    it "handles MySQL2 case-insensitive search with COLLATE" do
+      case_insensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: false
+      end
+
+      allow(case_insensitive_model.connection).to receive(:adapter_name).and_return('mysql2')
+      relation = case_insensitive_model.search("test")
+      expect(relation.to_sql).to include("utf8mb4_unicode_ci")
+    end
+
+    it "handles Trilogy case-insensitive search with COLLATE" do
+      case_insensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: false
+      end
+
+      allow(case_insensitive_model.connection).to receive(:adapter_name).and_return('trilogy')
+      relation = case_insensitive_model.search("test")
+      expect(relation.to_sql).to include("utf8mb4_unicode_ci")
+    end
+
+    it "handles unknown adapter case-insensitive search with LOWER fallback" do
+      case_insensitive_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable case_sensitive: false
+      end
+
+      allow(case_insensitive_model.connection).to receive(:adapter_name).and_return('unknown_adapter')
+      relation = case_insensitive_model.search("TEST")
+      expect(relation.to_sql).to include("LOWER")
+    end
+  end
+
+  describe "instance method edge cases" do
+    it "handles searchable? with empty string values" do
+      instance = TestModel.new(name: "", description: "")
+      expect(instance.searchable?).to be false
+    end
+
+    it "handles searchable? with nil values" do
+      instance = TestModel.new(name: nil, description: nil)
+      expect(instance.searchable?).to be false
+    end
+
+    it "handles searchable? with mixed empty and content values" do
+      instance = TestModel.new(name: "Content", description: "")
+      expect(instance.searchable?).to be true
+    end
+
+    it "handles searchable? with whitespace-only content" do
+      instance = TestModel.new(name: "   \t\n   ", description: nil)
+      expect(instance.searchable?).to be false
+    end
+
+    it "handles search_data with various field types" do
+      instance = TestModel.new(name: "Test", description: "Content")
+      data = instance.search_data
+      expect(data.keys).to match_array(["name", "description"])
+    end
+
+    it "returns search_data hash structure correctly" do
+      instance = TestModel.new(name: "Test", description: nil)
+      data = instance.search_data
+      expect(data).to be_a(Hash)
+    end
+  end
+
+  describe "searchable_fields edge cases" do
+    it "handles fields option with string array" do
+      string_fields_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable fields: ["name"]
+      end
+
+      expect(string_fields_model.searchable_fields).to eq(["name"])
+    end
+
+    it "handles fields option with symbol array" do
+      symbol_fields_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable fields: [:name]
+      end
+
+      expect(symbol_fields_model.searchable_fields).to eq(["name"])
+    end
+
+    it "handles fields option with mixed string and symbol array" do
+      mixed_fields_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable fields: [:name, "description"]
+      end
+
+      fields = mixed_fields_model.searchable_fields
+      expect(fields).to include("name", "description")
+    end
+
+    it "filters out non-existent fields" do
+      invalid_fields_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable fields: [:name, :non_existent_field]
+      end
+
+      expect(invalid_fields_model.searchable_fields).to eq(["name"])
+    end
+
+    it "returns all searchable columns when no fields specified" do
+      all_fields_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+        searchable
+      end
+
+      fields = all_fields_model.searchable_fields
+      expect(fields).to include("name", "description")
     end
   end
 end
