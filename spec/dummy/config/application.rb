@@ -12,5 +12,8 @@ module Dummy
     config.secret_key_base = "secret"
     config.active_support.deprecation = :log
     config.eager_load = false
+
+    # Disable logging in test environment
+    config.logger = Logger.new(nil)
   end
 end
