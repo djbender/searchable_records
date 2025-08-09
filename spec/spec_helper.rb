@@ -1,16 +1,18 @@
 require "bundler/setup"
 
-# Start SimpleCov before loading application code
-require "simplecov"
-SimpleCov.start do
-  add_filter "/spec/"
-  add_filter "/vendor/"
+# Start SimpleCov before loading application code (skip during mutation testing)
+unless ENV['MUTANT']
+  require "simplecov"
+  SimpleCov.start do
+    add_filter "/spec/"
+    add_filter "/vendor/"
 
-  # Track only our gem code
-  add_group "Library", "lib"
+    # Track only our gem code
+    add_group "Library", "lib"
 
-  # Set minimum coverage threshold
-  minimum_coverage 90
+    # Set minimum coverage threshold
+    minimum_coverage 90
+  end
 end
 
 require "searchable_records"

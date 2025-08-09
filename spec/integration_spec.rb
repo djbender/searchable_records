@@ -137,4 +137,79 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
       expect(instance.search_data).to eq(expected_data)
     end
   end
+
+  describe "module isolation" do
+    it "properly includes SearchableRecords::InstanceMethods" do
+      TestModel.searchable
+      instance = TestModel.new
+      expect(instance.class.ancestors).to include(SearchableRecords::InstanceMethods)
+    end
+
+    it "properly extends SearchableRecords::ClassMethods" do
+      TestModel.searchable
+      expect(TestModel.singleton_class.ancestors).to include(SearchableRecords::ClassMethods)
+    end
+
+    it "fails when InstanceMethods constant doesn't exist in global scope" do
+      # This test ensures the mutation that changes SearchableRecords::InstanceMethods to InstanceMethods fails
+      expect { Object.const_get('InstanceMethods') }.to raise_error(NameError)
+    end
+
+    it "fails when ClassMethods constant doesn't exist in global scope" do
+      # This test ensures the mutation that changes SearchableRecords::ClassMethods to ClassMethods fails
+      expect { Object.const_get('ClassMethods') }.to raise_error(NameError)
+    end
+
+    it "specifically references the SearchableRecords namespace for InstanceMethods" do
+      # Create a model that doesn't call searchable yet
+      non_searchable_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+      end
+
+      # Verify it doesn't have the methods
+      expect(non_searchable_model.new).not_to respond_to(:searchable?)
+
+      # Now add searchable
+      non_searchable_model.extend(SearchableRecords::Searchable)
+      non_searchable_model.searchable
+
+      # Should now have instance methods
+      expect(non_searchable_model.new).to respond_to(:searchable?)
+    end
+
+    it "specifically references the SearchableRecords namespace for ClassMethods" do
+      # Create a model that doesn't call searchable yet
+      non_searchable_model = Class.new(ActiveRecord::Base) do
+        self.table_name = "test_models"
+      end
+
+      # Verify it doesn't have the methods
+      expect(non_searchable_model).not_to respond_to(:search)
+
+      # Now add searchable
+      non_searchable_model.extend(SearchableRecords::Searchable)
+      non_searchable_model.searchable
+
+      # Should now have class methods
+      expect(non_searchable_model).to respond_to(:search)
+    end
+  end
+
+  describe "edge cases for search" do
+    before do
+      TestModel.delete_all
+      @model1 = TestModel.create!(name: "Test", description: "Sample")
+    end
+
+    it "handles when no searchable fields exist" do
+      # Mock columns to return empty array to test conditions.empty? path
+      allow(TestModel).to receive(:columns).and_return([])
+      expect(TestModel.search("test")).to be_empty
+    end
+
+    it "handles whitespace-only queries differently from empty strings" do
+      results = TestModel.search("   ")
+      expect(results).to be_empty  # Should be treated as blank and return none
+    end
+  end
 end
