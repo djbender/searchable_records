@@ -1,0 +1,14 @@
+# Mutant configuration
+usage: opensource
+integration: rspec
+requires:
+  - ./lib/searchable_records
+matcher:
+  subjects:
+    - 'SearchableRecords*'
+coverage_criteria:
+  test_result: true
+  process_abort: false
+  timeout: false
+mutation_timeout: 30.0
+jobs: 8
