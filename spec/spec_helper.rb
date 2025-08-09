@@ -1,4 +1,18 @@
 require "bundler/setup"
+
+# Start SimpleCov before loading application code
+require "simplecov"
+SimpleCov.start do
+  add_filter "/spec/"
+  add_filter "/vendor/"
+
+  # Track only our gem code
+  add_group "Library", "lib"
+
+  # Set minimum coverage threshold
+  minimum_coverage 90
+end
+
 require "searchable_records"
 
 RSpec.configure do |config|
