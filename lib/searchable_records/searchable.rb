@@ -15,8 +15,8 @@ module SearchableRecords
       
       searchable_fields.each_with_index do |column_name, index|
         param_key = "search_param_#{index}".to_sym
-        conditions << "#{table_name}.#{column_name} = :#{param_key}"
-        params[param_key] = query
+        conditions << "#{table_name}.#{column_name} LIKE :#{param_key}"
+        params[param_key] = "%#{query}%"
       end
       
       return none if conditions.empty?
