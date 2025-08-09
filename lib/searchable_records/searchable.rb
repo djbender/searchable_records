@@ -8,11 +8,33 @@ module SearchableRecords
 
   module ClassMethods
     def search(query)
-      # Skeleton for class method search functionality
+      return none if query.blank?
+      
+      conditions = []
+      params = {}
+      
+      searchable_fields.each_with_index do |column_name, index|
+        param_key = "search_param_#{index}".to_sym
+        conditions << "#{table_name}.#{column_name} = :#{param_key}"
+        params[param_key] = query
+      end
+      
+      return none if conditions.empty?
+      where(conditions.join(" OR "), params)
     end
 
     def searchable_fields
-      # Skeleton for defining searchable fields
+      searchable_column_names
+    end
+
+    private
+
+    def searchable_column_names
+      searchable_types = [:string, :text]
+      
+      columns.select do |column|
+        searchable_types.include?(column.type)
+      end.map(&:name)
     end
   end
 
