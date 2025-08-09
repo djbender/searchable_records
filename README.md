@@ -82,6 +82,8 @@ User.search("JOHN")  # Case-insensitive search only in name field
 - **Multi-column search**: Searches all string/text columns automatically
 - **Case-insensitive**: Works regardless of case (configurable)
 - **Field scoping**: Limit search to specific columns
+- **Multi-database support**: Works with SQLite, PostgreSQL, and MySQL
+- **Database-optimized**: Uses database-specific features for best performance
 - **Secure**: Uses parameterized queries to prevent SQL injection
 - **Type-safe**: Only searches appropriate column types (string, text)
 

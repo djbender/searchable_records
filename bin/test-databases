@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+# Script to test SearchableRecords against multiple database adapters
+
+set -e
+
+echo "🧪 Testing SearchableRecords with Multiple Database Adapters"
+echo "==========================================================="
+
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+run_tests() {
+    local adapter=$1
+    local description=$2
+    
+    echo -e "\n${BLUE}Testing with ${description}...${NC}"
+    echo "DATABASE_ADAPTER=${adapter}"
+    
+    if DATABASE_ADAPTER="$adapter" bin/rspec --format progress; then
+        echo -e "${GREEN}✅ ${description} tests passed${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ ${description} tests failed${NC}"
+        return 1
+    fi
+}
+
+# Track results
+SQLITE_RESULT=0
+POSTGRESQL_RESULT=0
+
+# Test SQLite (default)
+run_tests "sqlite3" "SQLite" || SQLITE_RESULT=$?
+
+# Test PostgreSQL (if available)
+if command -v psql >/dev/null 2>&1 && pg_isready >/dev/null 2>&1; then
+    run_tests "postgresql" "PostgreSQL" || POSTGRESQL_RESULT=$?
+else
+    echo -e "\n${RED}⚠️  PostgreSQL not available, skipping PostgreSQL tests${NC}"
+    echo "To test with PostgreSQL:"
+    echo "1. Install PostgreSQL"
+    echo "2. Start PostgreSQL service"
+    echo "3. Ensure connection settings in spec/dummy/config/database.yml are correct"
+fi
+
+# Summary
+echo -e "\n${BLUE}Test Summary${NC}"
+echo "============="
+
+if [ $SQLITE_RESULT -eq 0 ]; then
+    echo -e "${GREEN}✅ SQLite tests passed${NC}"
+else
+    echo -e "${RED}❌ SQLite tests failed${NC}"
+fi
+
+if command -v psql >/dev/null 2>&1 && pg_isready >/dev/null 2>&1; then
+    if [ $POSTGRESQL_RESULT -eq 0 ]; then
+        echo -e "${GREEN}✅ PostgreSQL tests passed${NC}"
+    else
+        echo -e "${RED}❌ PostgreSQL tests failed${NC}"
+    fi
+fi
+
+# Exit with error if any tests failed
+if [ $SQLITE_RESULT -ne 0 ] || [ $POSTGRESQL_RESULT -ne 0 ]; then
+    exit 1
+fi
+
+echo -e "\n${GREEN}🎉 All available database tests passed!${NC}"

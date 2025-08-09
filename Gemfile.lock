@@ -138,6 +138,7 @@ GEM
     parser (3.3.9.0)
       ast (~> 2.4.1)
       racc
+    pg (1.6.1-x86_64-darwin)
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
@@ -243,6 +244,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 2.0)
   mutant-rspec (~> 0.13.3)
+  pg (~> 1.5)
   rails (>= 6.0)
   rspec (~> 3.12)
   rspec-rails (~> 6.0)

@@ -24,12 +24,27 @@ module SearchableRecords
         param_key = "search_param_#{index}".to_sym
 
         if config[:case_sensitive]
-          # For case-sensitive search, we need to ensure exact case matching
-          # SQLite LIKE is case-insensitive by default, so we use GLOB for case-sensitive
-          conditions << "#{table_name}.#{column_name} GLOB :#{param_key}"
-          params[param_key] = "*#{query}*"
+          # Database-specific case-sensitive search
+          case connection.adapter_name.downcase
+          when 'sqlite', 'sqlite3'
+            # SQLite: Use GLOB for case-sensitive pattern matching
+            conditions << "#{table_name}.#{column_name} GLOB :#{param_key}"
+            params[param_key] = "*#{query}*"
+          when 'postgresql'
+            # PostgreSQL: Use regular LIKE (PostgreSQL LIKE is case-sensitive by default)
+            conditions << "#{table_name}.#{column_name} LIKE :#{param_key}"
+            params[param_key] = "%#{query}%"
+          when 'mysql2', 'trilogy'
+            # MySQL: Use BINARY for case-sensitive comparison
+            conditions << "#{table_name}.#{column_name} LIKE BINARY :#{param_key}"
+            params[param_key] = "%#{query}%"
+          else
+            # Fallback: Use standard LIKE
+            conditions << "#{table_name}.#{column_name} LIKE :#{param_key}"
+            params[param_key] = "%#{query}%"
+          end
         else
-          # For case-insensitive search, use LOWER() on both sides
+          # For case-insensitive search, use LOWER() on both sides for all databases
           conditions << "LOWER(#{table_name}.#{column_name}) LIKE :#{param_key}"
           params[param_key] = "%#{query.downcase}%"
         end
