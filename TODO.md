@@ -1,9 +1,8 @@
 # SearchableRecords - Future Enhancements
 
 ## 1. API Improvements
-- **Case-insensitive option**: Add configurable case sensitivity 
+- **Case-insensitive option**: Add configurable case sensitivity
 - **Search scoping**: Allow limiting search to specific columns
-- **Multiple queries**: Support `Model.search("term1", "term2")`
 
 ## 2. Performance Enhancements
 - **Database indexes**: Document recommended indexes for searchable columns

@@ -212,4 +212,140 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
       expect(results).to be_empty  # Should be treated as blank and return none
     end
   end
+
+  describe "API improvements" do
+    before do
+      TestModel.delete_all
+    end
+
+    describe "case sensitivity configuration" do
+      let!(:case_sensitive_model_class) do
+        Class.new(ActiveRecord::Base) do
+          self.table_name = "test_models"
+          searchable case_sensitive: true
+        end
+      end
+
+      let!(:case_insensitive_model_class) do
+        Class.new(ActiveRecord::Base) do
+          self.table_name = "test_models" 
+          searchable case_sensitive: false
+        end
+      end
+
+      before do
+        @model1 = TestModel.create!(name: "John DOE", description: "A DEVELOPER")
+        @model2 = TestModel.create!(name: "jane smith", description: "a designer")
+      end
+
+      it "performs case-sensitive search when configured" do
+        results = case_sensitive_model_class.search("john")
+        expect(results).to be_empty  # Should not find "John DOE" with lowercase "john"
+      end
+
+      it "finds exact case matches when case-sensitive" do
+        results = case_sensitive_model_class.search("John DOE")
+        expect(results.count).to eq(1)
+        expect(results.first.name).to eq("John DOE")
+      end
+
+      it "performs case-insensitive search by default" do
+        results = case_insensitive_model_class.search("JOHN")
+        expect(results.count).to eq(1)
+        expect(results.first.name).to eq("John DOE")
+      end
+
+      it "finds mixed case matches when case-insensitive" do
+        results = case_insensitive_model_class.search("JANE")
+        expect(results.count).to eq(1)
+        expect(results.first.name).to eq("jane smith")
+      end
+    end
+
+    describe "field scoping configuration" do
+      let!(:name_only_model_class) do
+        Class.new(ActiveRecord::Base) do
+          self.table_name = "test_models"
+          searchable fields: [:name]
+        end
+      end
+
+      let!(:description_only_model_class) do  
+        Class.new(ActiveRecord::Base) do
+          self.table_name = "test_models"
+          searchable fields: [:description]
+        end
+      end
+
+      before do
+        @model1 = TestModel.create!(name: "NameOnlyTerm", description: "Description content")
+        @model2 = TestModel.create!(name: "Name content", description: "DescriptionOnlyTerm")
+      end
+
+      it "only searches specified fields" do
+        results = name_only_model_class.search("NameOnlyTerm")
+        expect(results.count).to eq(1)
+        expect(results.first.name).to eq("NameOnlyTerm")
+      end
+
+      it "ignores non-specified fields" do
+        results = name_only_model_class.search("Description content")
+        expect(results).to be_empty  # Should not find in description
+      end
+
+      it "searches only description when scoped to description" do
+        results = description_only_model_class.search("DescriptionOnlyTerm")
+        expect(results.count).to eq(1)
+        expect(results.first.description).to eq("DescriptionOnlyTerm")
+      end
+
+      it "ignores name field when scoped to description only" do
+        results = description_only_model_class.search("NameOnlyTerm")
+        expect(results).to be_empty  # Should not find "NameOnlyTerm" which only exists in name field
+      end
+
+      it "returns correct searchable_fields for scoped model" do
+        expect(name_only_model_class.searchable_fields).to eq(["name"])
+        expect(description_only_model_class.searchable_fields).to eq(["description"])
+      end
+
+      it "handles non-existent fields gracefully" do
+        non_existent_model_class = Class.new(ActiveRecord::Base) do
+          self.table_name = "test_models"
+          searchable fields: [:non_existent_field]
+        end
+        
+        expect(non_existent_model_class.searchable_fields).to be_empty
+        expect(non_existent_model_class.search("test")).to be_empty
+      end
+    end
+
+    describe "combined configuration options" do  
+      let!(:combined_model_class) do
+        Class.new(ActiveRecord::Base) do
+          self.table_name = "test_models"
+          searchable fields: [:name], case_sensitive: true
+        end
+      end
+
+      before do
+        @model1 = TestModel.create!(name: "ExactCase", description: "should not be searched")
+      end
+
+      it "respects both field scoping and case sensitivity" do
+        results = combined_model_class.search("exactcase")
+        expect(results).to be_empty  # Case-sensitive, so "exactcase" != "ExactCase"
+      end
+
+      it "finds matches with exact case and correct field" do
+        results = combined_model_class.search("ExactCase")
+        expect(results.count).to eq(1)
+      end
+
+      it "only searches specified field even with case sensitivity" do
+        results = combined_model_class.search("should not be searched")
+        expect(results).to be_empty  # Description field should not be searched
+      end
+    end
+  end
 end

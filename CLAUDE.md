@@ -45,3 +45,4 @@ bin/rspec
 
 ## Code standards
 - Always check codecoverage.
+- Do not run the mutation tests unless specifically asked and approved.
