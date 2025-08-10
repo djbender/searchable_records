@@ -2,6 +2,6 @@ source 'https://rubygems.org'
 
 gemspec
 
-# Pin securerandom for Ruby 3.0/3.1 compatibility
+# Pin gems for Ruby 3.0/3.1 compatibility
 gem 'securerandom', '< 0.4.0'
 gem 'mutant-rspec', '< 0.13.0'
