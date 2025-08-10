@@ -59,6 +59,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Select Gemfile for Ruby version
+      run: |
+        if [[ "${{ matrix.ruby }}" == "3.0" || "${{ matrix.ruby }}" == "3.1" ]]; then
+          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.0" >> $GITHUB_ENV
+        else
+          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
+        fi
+
     - name: Set up Ruby ${{ matrix.ruby }}
       uses: ruby/setup-ruby@v1
       with:
