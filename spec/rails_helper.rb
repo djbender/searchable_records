@@ -33,16 +33,22 @@ RSpec.configure do |config|
   config.before(:suite) do
     ActiveRecord::Migration.verbose = false
     
-    # Create PostgreSQL database if needed
+    # Create database if needed
     if ENV['DATABASE_ADAPTER'] == 'postgresql'
       RSpec.create_postgresql_database_if_needed
+    elsif ENV['DATABASE_ADAPTER'] == 'mysql2'
+      DatabaseAdapter.create_database_if_needed
     end
   end
   
   config.after(:suite) do
-    # Clean up PostgreSQL database if in CI or requested
-    if ENV['DATABASE_ADAPTER'] == 'postgresql' && ENV['CI']
-      RSpec.drop_postgresql_database_if_needed
+    # Clean up database if in CI or requested
+    if ENV['CI']
+      if ENV['DATABASE_ADAPTER'] == 'postgresql'
+        RSpec.drop_postgresql_database_if_needed
+      elsif ENV['DATABASE_ADAPTER'] == 'mysql2'
+        DatabaseAdapter.drop_database_if_needed
+      end
     end
   end
 end
