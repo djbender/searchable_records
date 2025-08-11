@@ -147,3 +147,49 @@ jobs:
       run: |
         mysqladmin ping -h 127.0.0.1 -u root -pmysql
         bin/rspec
+
+  test-rails-versions:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        rails-version: 
+          - '7.1.5'
+          - '7.2.2'
+          - '8.0.2'
+          - 'main'
+
+    env:
+      DATABASE_ADAPTER: sqlite3
+      RAILS_VERSION: ${{ matrix.rails-version }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby 3.4
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+
+    - name: Create Rails-specific Gemfile
+      run: |
+        cat > Gemfile.rails-test << EOF
+        source 'https://rubygems.org'
+        
+        gemspec
+        
+        if ENV['RAILS_VERSION'] == 'main'
+          gem 'rails', git: 'https://github.com/rails/rails.git', branch: 'main'
+        else
+          gem 'rails', '~> ${{ matrix.rails-version }}'
+        end
+        EOF
+        
+        echo "BUNDLE_GEMFILE=Gemfile.rails-test" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: bundle install
+
+    - name: Run tests
+      run: bin/rspec
