@@ -92,11 +92,6 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
 
-    - name: Setup database
-      run: |
-        # PostgreSQL client is pre-installed on ubuntu-latest runners
-        createdb -h localhost -U postgres searchable_records_test
-
     - name: Run tests
       run: bin/rspec
 
