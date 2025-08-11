@@ -39,8 +39,8 @@ jobs:
       run: bin/rspec
 
     - name: Upload coverage to Codecov
-      if: matrix.ruby == '3.3'
-      uses: codecov/codecov-action@v3
+      if: matrix.ruby == '3.4'
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage/coverage.xml
         fail_ci_if_error: false
@@ -61,9 +61,9 @@ jobs:
           POSTGRES_DB: searchable_records_test
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 3
         ports:
           - 5432:5432
 
@@ -94,9 +94,8 @@ jobs:
 
     - name: Setup database
       run: |
-        sudo apt-get update
-        sudo apt-get install -y postgresql-client
-        createdb -h localhost -U postgres searchable_records_test || true
+        # PostgreSQL client is pre-installed on ubuntu-latest runners
+        createdb -h localhost -U postgres searchable_records_test
 
     - name: Run tests
       run: bin/rspec
@@ -118,9 +117,9 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: no
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -pmysql"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=3
         ports:
           - 3306:3306
 
