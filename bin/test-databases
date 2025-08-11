@@ -13,35 +13,30 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-run_tests() {
-    local adapter=$1
-    local description=$2
-    
-    echo -e "\n${BLUE}Testing with ${description}...${NC}"
-    echo "DATABASE_ADAPTER=${adapter}"
-    
-    if DATABASE_ADAPTER="$adapter" bin/rspec --format progress; then
-        echo -e "${GREEN}✅ ${description} tests passed${NC}"
-        return 0
-    else
-        echo -e "${RED}❌ ${description} tests failed${NC}"
-        return 1
-    fi
-}
-
 # Track results
 SQLITE_RESULT=0
 POSTGRESQL_RESULT=0
 MYSQL_RESULT=0
 
-# Test SQLite (default)
-run_tests "sqlite3" "SQLite" || SQLITE_RESULT=$?
+# Test SQLite
+echo -e "\n${BLUE}Running SQLite tests...${NC}"
+if bin/test-sqlite3; then
+    SQLITE_RESULT=0
+else
+    SQLITE_RESULT=1
+fi
 
 # Test PostgreSQL (if available)
+echo -e "\n${BLUE}Checking PostgreSQL availability...${NC}"
 if command -v pg_isready >/dev/null 2>&1 && pg_isready -h ${POSTGRES_HOST:-localhost} -p ${POSTGRES_PORT:-5432} >/dev/null 2>&1; then
-    run_tests "postgresql" "PostgreSQL" || POSTGRESQL_RESULT=$?
+    echo -e "${BLUE}Running PostgreSQL tests...${NC}"
+    if bin/test-postgresql; then
+        POSTGRESQL_RESULT=0
+    else
+        POSTGRESQL_RESULT=1
+    fi
 else
-    echo -e "\n${RED}⚠️  PostgreSQL not available, skipping PostgreSQL tests${NC}"
+    echo -e "${RED}⚠️  PostgreSQL not available, skipping PostgreSQL tests${NC}"
     echo "To test with PostgreSQL:"
     echo "1. Install PostgreSQL client tools (pg_isready)"
     echo "2. Start PostgreSQL service or container"
@@ -49,19 +44,25 @@ else
 fi
 
 # Test MySQL (if available)
+echo -e "\n${BLUE}Checking MySQL availability...${NC}"
 if command -v mysql >/dev/null 2>&1; then
     # Try to connect to MySQL server
     if mysql -h ${MYSQL_HOST:-localhost} -P ${MYSQL_PORT:-3306} -u ${MYSQL_USER:-derek} -p${MYSQL_PASSWORD:-password} -e "SELECT 1" >/dev/null 2>&1; then
-        run_tests "mysql2" "MySQL" || MYSQL_RESULT=$?
+        echo -e "${BLUE}Running MySQL tests...${NC}"
+        if bin/test-mysql; then
+            MYSQL_RESULT=0
+        else
+            MYSQL_RESULT=1
+        fi
     else
-        echo -e "\n${RED}⚠️  MySQL not available or connection failed, skipping MySQL tests${NC}"
+        echo -e "${RED}⚠️  MySQL not available or connection failed, skipping MySQL tests${NC}"
         echo "To test with MySQL:"
         echo "1. Start MySQL service or container"
         echo "2. Ensure connection settings in spec/dummy/config/database.yml are correct"
         echo "3. Set MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD environment variables if needed"
     fi
 else
-    echo -e "\n${RED}⚠️  MySQL client not installed, skipping MySQL tests${NC}"
+    echo -e "${RED}⚠️  MySQL client not installed, skipping MySQL tests${NC}"
 fi
 
 # Summary

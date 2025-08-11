@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Script to test SearchableRecords with SQLite
+
+set -e
+
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}Testing SearchableRecords with SQLite...${NC}"
+echo "DATABASE_ADAPTER=sqlite3"
+
+if DATABASE_ADAPTER="sqlite3" bin/rspec --format progress; then
+    echo -e "${GREEN}✅ SQLite tests passed${NC}"
+    exit 0
+else
+    echo -e "${RED}❌ SQLite tests failed${NC}"
+    exit 1
+fi

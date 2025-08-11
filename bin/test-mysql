@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# Script to test SearchableRecords with MySQL
+
+set -e
+
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}Testing SearchableRecords with MySQL...${NC}"
+
+# Check if MySQL client is available
+if ! command -v mysql >/dev/null 2>&1; then
+    echo -e "${RED}❌ MySQL client not installed${NC}"
+    echo "Install MySQL client to run MySQL tests"
+    exit 1
+fi
+
+# Try to connect to MySQL server
+if ! mysql -h ${MYSQL_HOST:-localhost} -P ${MYSQL_PORT:-3306} -u ${MYSQL_USER:-derek} -p${MYSQL_PASSWORD:-password} -e "SELECT 1" >/dev/null 2>&1; then
+    echo -e "${RED}❌ MySQL server not available or connection failed${NC}"
+    echo "To test with MySQL:"
+    echo "1. Start MySQL service or container"
+    echo "2. Ensure connection settings in spec/dummy/config/database.yml are correct"
+    echo "3. Set MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD environment variables if needed"
+    exit 1
+fi
+
+echo "DATABASE_ADAPTER=mysql2"
+
+if DATABASE_ADAPTER="mysql2" bin/rspec --format progress; then
+    echo -e "${GREEN}✅ MySQL tests passed${NC}"
+    exit 0
+else
+    echo -e "${RED}❌ MySQL tests failed${NC}"
+    exit 1
+fi

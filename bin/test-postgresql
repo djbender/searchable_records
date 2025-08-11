@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Script to test SearchableRecords with PostgreSQL
+
+set -e
+
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}Testing SearchableRecords with PostgreSQL...${NC}"
+
+# Check if PostgreSQL is available
+if ! command -v pg_isready >/dev/null 2>&1; then
+    echo -e "${RED}❌ PostgreSQL client tools not installed${NC}"
+    echo "Install PostgreSQL client tools (pg_isready) to run PostgreSQL tests"
+    exit 1
+fi
+
+if ! pg_isready -h ${POSTGRES_HOST:-localhost} -p ${POSTGRES_PORT:-5432} >/dev/null 2>&1; then
+    echo -e "${RED}❌ PostgreSQL server not available${NC}"
+    echo "To test with PostgreSQL:"
+    echo "1. Start PostgreSQL service or container"
+    echo "2. Ensure connection settings in spec/dummy/config/database.yml are correct"
+    exit 1
+fi
+
+echo "DATABASE_ADAPTER=postgresql"
+
+if DATABASE_ADAPTER="postgresql" bin/rspec --format progress; then
+    echo -e "${GREEN}✅ PostgreSQL tests passed${NC}"
+    exit 0
+else
+    echo -e "${RED}❌ PostgreSQL tests failed${NC}"
+    exit 1
+fi
