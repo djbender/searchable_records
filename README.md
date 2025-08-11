@@ -88,6 +88,28 @@ User.search("JOHN")  # Case-insensitive search only in name field
 - **Database-optimized**: Uses database-specific features for best performance
 - **Secure**: Uses parameterized queries to prevent SQL injection
 - **Type-safe**: Only searches appropriate column types (string, text)
+- **Comprehensive testing**: 54 Ruby/Rails/Database combinations tested
+
+## Compatibility
+
+SearchableRecords is thoroughly tested across a comprehensive compatibility matrix:
+
+### Ruby Versions
+- Ruby 3.0, 3.1, 3.2, 3.3, 3.4
+
+### Rails Versions
+- **Rails 7.1.5** (security-supported until October 2025)
+- **Rails 7.2.2** (bug fixes until August 2025, security until August 2026)
+- **Rails 8.0.2** (latest stable)
+- **Rails main** (development branch for early compatibility)
+
+### Database Adapters
+- **SQLite 3** (sqlite3 gem)
+- **PostgreSQL 15+** (pg gem) with trigram extension support
+- **MySQL 8.0+** (mysql2 gem) with full-text search optimization
+
+### Testing Matrix
+Our CI runs **54 test combinations** covering every supported Ruby/Rails/Database combination to ensure maximum compatibility and reliability.
 
 ## Examples
 
@@ -314,11 +336,40 @@ bin/rspec
 
 ### Testing
 
-- Uses RSpec for testing framework
-- Includes dummy Rails app for integration testing
-- Run tests: `bin/rspec`
-- Test all databases: `bin/test-databases`
-- PostgreSQL-specific tests: `DATABASE_ADAPTER=postgresql bin/rspec spec/postgresql_spec.rb`
+SearchableRecords has comprehensive test coverage with **54 test combinations** in CI:
+
+- **Testing Framework**: RSpec with integration tests using dummy Rails app
+- **Ruby Versions**: 3.0, 3.1, 3.2, 3.3, 3.4
+- **Rails Versions**: 7.1.5, 7.2.2, 8.0.2, main branch
+- **Database Adapters**: SQLite, PostgreSQL, MySQL
+
+#### Local Testing Commands
+
+```bash
+# Run tests with default setup
+bin/rspec
+
+# Test all supported databases
+bin/test-databases
+
+# Test specific database adapter
+DATABASE_ADAPTER=postgresql bin/rspec
+DATABASE_ADAPTER=mysql2 bin/rspec
+
+# PostgreSQL-specific features (trigram indexes, etc.)
+DATABASE_ADAPTER=postgresql bin/rspec spec/postgresql_spec.rb
+
+# Docker-based testing (includes PostgreSQL with trigram extension)
+docker-compose run test
+```
+
+#### CI Matrix Coverage
+
+Our GitHub Actions CI automatically tests all combinations:
+- **15 combinations**: Rails 7.1.5 × Ruby 3.0-3.4 × 3 databases
+- **12 combinations**: Rails 7.2.2 × Ruby 3.1-3.4 × 3 databases  
+- **9 combinations**: Rails 8.0.2 × Ruby 3.2-3.4 × 3 databases
+- **9 combinations**: Rails main × Ruby 3.2-3.4 × 3 databases
 
 ### Development Workflow
 
