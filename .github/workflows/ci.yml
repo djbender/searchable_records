@@ -223,7 +223,6 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true
 
     - name: Create Rails-specific Gemfile
       run: |
@@ -238,6 +237,12 @@ jobs:
         fi
         
         echo "BUNDLE_GEMFILE=Gemfile.test" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
 
     - name: Test MySQL connection
       if: matrix.database == 'mysql2'
