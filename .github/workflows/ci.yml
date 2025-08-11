@@ -7,51 +7,155 @@ on:
     branches: [ main ]
 
 jobs:
-  test-sqlite:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.0', '3.1', '3.2', '3.3', '3.4']
-
-    env:
-      DATABASE_ADAPTER: sqlite3
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Select Gemfile for Ruby version
-      run: |
-        if [[ "${{ matrix.ruby }}" == "3.0" || "${{ matrix.ruby }}" == "3.1" ]]; then
-          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.0" >> $GITHUB_ENV
-        else
-          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
-        fi
-
-    - name: Set up Ruby ${{ matrix.ruby }}
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true
-
-    - name: Run tests
-      run: bin/rspec
-
-    - name: Upload coverage to Codecov
-      if: matrix.ruby == '3.4'
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage/coverage.xml
-        fail_ci_if_error: false
-
-  test-postgresql:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        ruby: ['3.0', '3.1', '3.2', '3.3', '3.4']
+        include:
+          # Rails 7.1.5 with all Ruby/Database combinations (Ruby 3.0+)
+          - ruby: '3.0'
+            database: 'sqlite3'
+            rails: '7.1.5'
+          - ruby: '3.0'
+            database: 'postgresql'
+            rails: '7.1.5'
+          - ruby: '3.0'
+            database: 'mysql2'
+            rails: '7.1.5'
+          - ruby: '3.1'
+            database: 'sqlite3'
+            rails: '7.1.5'
+          - ruby: '3.1'
+            database: 'postgresql'
+            rails: '7.1.5'
+          - ruby: '3.1'
+            database: 'mysql2'
+            rails: '7.1.5'
+          - ruby: '3.2'
+            database: 'sqlite3'
+            rails: '7.1.5'
+          - ruby: '3.2'
+            database: 'postgresql'
+            rails: '7.1.5'
+          - ruby: '3.2'
+            database: 'mysql2'
+            rails: '7.1.5'
+          - ruby: '3.3'
+            database: 'sqlite3'
+            rails: '7.1.5'
+          - ruby: '3.3'
+            database: 'postgresql'
+            rails: '7.1.5'
+          - ruby: '3.3'
+            database: 'mysql2'
+            rails: '7.1.5'
+          - ruby: '3.4'
+            database: 'sqlite3'
+            rails: '7.1.5'
+          - ruby: '3.4'
+            database: 'postgresql'
+            rails: '7.1.5'
+          - ruby: '3.4'
+            database: 'mysql2'
+            rails: '7.1.5'
+          
+          # Rails 7.2.2 with all Ruby/Database combinations (Ruby 3.1+)
+          - ruby: '3.1'
+            database: 'sqlite3'
+            rails: '7.2.2'
+          - ruby: '3.1'
+            database: 'postgresql'
+            rails: '7.2.2'
+          - ruby: '3.1'
+            database: 'mysql2'
+            rails: '7.2.2'
+          - ruby: '3.2'
+            database: 'sqlite3'
+            rails: '7.2.2'
+          - ruby: '3.2'
+            database: 'postgresql'
+            rails: '7.2.2'
+          - ruby: '3.2'
+            database: 'mysql2'
+            rails: '7.2.2'
+          - ruby: '3.3'
+            database: 'sqlite3'
+            rails: '7.2.2'
+          - ruby: '3.3'
+            database: 'postgresql'
+            rails: '7.2.2'
+          - ruby: '3.3'
+            database: 'mysql2'
+            rails: '7.2.2'
+          - ruby: '3.4'
+            database: 'sqlite3'
+            rails: '7.2.2'
+          - ruby: '3.4'
+            database: 'postgresql'
+            rails: '7.2.2'
+          - ruby: '3.4'
+            database: 'mysql2'
+            rails: '7.2.2'
+          
+          # Rails 8.0.2 with all Ruby/Database combinations (Ruby 3.2+)
+          - ruby: '3.2'
+            database: 'sqlite3'
+            rails: '8.0.2'
+          - ruby: '3.2'
+            database: 'postgresql'
+            rails: '8.0.2'
+          - ruby: '3.2'
+            database: 'mysql2'
+            rails: '8.0.2'
+          - ruby: '3.3'
+            database: 'sqlite3'
+            rails: '8.0.2'
+          - ruby: '3.3'
+            database: 'postgresql'
+            rails: '8.0.2'
+          - ruby: '3.3'
+            database: 'mysql2'
+            rails: '8.0.2'
+          - ruby: '3.4'
+            database: 'sqlite3'
+            rails: '8.0.2'
+          - ruby: '3.4'
+            database: 'postgresql'
+            rails: '8.0.2'
+          - ruby: '3.4'
+            database: 'mysql2'
+            rails: '8.0.2'
+          
+          # Rails main with all Ruby/Database combinations (Ruby 3.2+)
+          - ruby: '3.2'
+            database: 'sqlite3'
+            rails: 'main'
+          - ruby: '3.2'
+            database: 'postgresql'
+            rails: 'main'
+          - ruby: '3.2'
+            database: 'mysql2'
+            rails: 'main'
+          - ruby: '3.3'
+            database: 'sqlite3'
+            rails: 'main'
+          - ruby: '3.3'
+            database: 'postgresql'
+            rails: 'main'
+          - ruby: '3.3'
+            database: 'mysql2'
+            rails: 'main'
+          - ruby: '3.4'
+            database: 'sqlite3'
+            rails: 'main'
+          - ruby: '3.4'
+            database: 'postgresql'
+            rails: 'main'
+          - ruby: '3.4'
+            database: 'mysql2'
+            rails: 'main'
 
     services:
       postgres:
@@ -67,43 +171,6 @@ jobs:
         ports:
           - 5432:5432
 
-    env:
-      DATABASE_ADAPTER: postgresql
-      PGHOST: localhost
-      PGPORT: 5432
-      PGUSER: postgres
-      PGPASSWORD: postgres
-      PGDATABASE: searchable_records_test
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Select Gemfile for Ruby version
-      run: |
-        if [[ "${{ matrix.ruby }}" == "3.0" || "${{ matrix.ruby }}" == "3.1" ]]; then
-          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.0" >> $GITHUB_ENV
-        else
-          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
-        fi
-
-    - name: Set up Ruby ${{ matrix.ruby }}
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true
-
-    - name: Run tests
-      run: bin/rspec
-
-  test-mysql:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        ruby: ['3.0', '3.1', '3.2', '3.3', '3.4']
-
-    services:
       mysql:
         image: mysql:8.0
         env:
@@ -119,116 +186,71 @@ jobs:
           - 3306:3306
 
     env:
-      DATABASE_ADAPTER: mysql2
-      MYSQL_HOST: 127.0.0.1
-      MYSQL_PORT: 3306
-      MYSQL_USER: root
-      MYSQL_PASSWORD: mysql
-      MYSQL_DATABASE: searchable_records_test
+      DATABASE_ADAPTER: ${{ matrix.database }}
+      RAILS_VERSION: ${{ matrix.rails }}
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Select Gemfile for Ruby version
+    - name: Set database-specific environment
+      run: |
+        case "${{ matrix.database }}" in
+          postgresql)
+            echo "PGHOST=localhost" >> $GITHUB_ENV
+            echo "PGPORT=5432" >> $GITHUB_ENV
+            echo "PGUSER=postgres" >> $GITHUB_ENV
+            echo "PGPASSWORD=postgres" >> $GITHUB_ENV
+            echo "PGDATABASE=searchable_records_test" >> $GITHUB_ENV
+            ;;
+          mysql2)
+            echo "MYSQL_HOST=127.0.0.1" >> $GITHUB_ENV
+            echo "MYSQL_PORT=3306" >> $GITHUB_ENV
+            echo "MYSQL_USER=root" >> $GITHUB_ENV
+            echo "MYSQL_PASSWORD=mysql" >> $GITHUB_ENV
+            echo "MYSQL_DATABASE=searchable_records_test" >> $GITHUB_ENV
+            ;;
+        esac
+
+    - name: Select base Gemfile for Ruby version
       run: |
         if [[ "${{ matrix.ruby }}" == "3.0" || "${{ matrix.ruby }}" == "3.1" ]]; then
-          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.0" >> $GITHUB_ENV
+          echo "BASE_GEMFILE=Gemfile.ruby-3.0" >> $GITHUB_ENV
         else
-          echo "BUNDLE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
+          echo "BASE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
         fi
 
     - name: Set up Ruby ${{ matrix.ruby }}
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true
-
-    - name: Run tests
-      run: |
-        mysqladmin ping -h 127.0.0.1 -u root -pmysql
-        bin/rspec
-
-  test-rails-versions:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # Rails 7.1.5 - supports Ruby 3.0+
-          - ruby-version: '3.0'
-            rails-version: '7.1.5'
-          - ruby-version: '3.1'
-            rails-version: '7.1.5'
-          - ruby-version: '3.2'
-            rails-version: '7.1.5'
-          - ruby-version: '3.3'
-            rails-version: '7.1.5'
-          - ruby-version: '3.4'
-            rails-version: '7.1.5'
-          
-          # Rails 7.2.2 - requires Ruby 3.1+
-          - ruby-version: '3.1'
-            rails-version: '7.2.2'
-          - ruby-version: '3.2'
-            rails-version: '7.2.2'
-          - ruby-version: '3.3'
-            rails-version: '7.2.2'
-          - ruby-version: '3.4'
-            rails-version: '7.2.2'
-          
-          # Rails 8.0.2 - requires Ruby 3.2+
-          - ruby-version: '3.2'
-            rails-version: '8.0.2'
-          - ruby-version: '3.3'
-            rails-version: '8.0.2'
-          - ruby-version: '3.4'
-            rails-version: '8.0.2'
-          
-          # Rails main - requires Ruby 3.2+
-          - ruby-version: '3.2'
-            rails-version: 'main'
-          - ruby-version: '3.3'
-            rails-version: 'main'
-          - ruby-version: '3.4'
-            rails-version: 'main'
-
-    env:
-      DATABASE_ADAPTER: sqlite3
-      RAILS_VERSION: ${{ matrix.rails-version }}
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Select Gemfile for Ruby version
-      run: |
-        if [[ "${{ matrix.ruby-version }}" == "3.0" || "${{ matrix.ruby-version }}" == "3.1" ]]; then
-          echo "BASE_GEMFILE=Gemfile.ruby-3.0" >> $GITHUB_ENV
-        else
-          echo "BASE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
-        fi
-
-    - name: Set up Ruby ${{ matrix.ruby-version }}
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby-version }}
 
     - name: Create Rails-specific Gemfile
       run: |
         # Start with base Gemfile content (excluding Rails line)
-        grep -v "gem 'rails'" $BASE_GEMFILE > Gemfile.rails-test
+        grep -v "gem 'rails'" $BASE_GEMFILE > Gemfile.test
         
         # Add Rails version
-        if [[ "${{ matrix.rails-version }}" == "main" ]]; then
-          echo "gem 'rails', git: 'https://github.com/rails/rails.git', branch: 'main'" >> Gemfile.rails-test
+        if [[ "${{ matrix.rails }}" == "main" ]]; then
+          echo "gem 'rails', git: 'https://github.com/rails/rails.git', branch: 'main'" >> Gemfile.test
         else
-          echo "gem 'rails', '~> ${{ matrix.rails-version }}'" >> Gemfile.rails-test
+          echo "gem 'rails', '~> ${{ matrix.rails }}'" >> Gemfile.test
         fi
         
-        echo "BUNDLE_GEMFILE=Gemfile.rails-test" >> $GITHUB_ENV
+        echo "BUNDLE_GEMFILE=Gemfile.test" >> $GITHUB_ENV
 
     - name: Install dependencies
       run: bundle install
 
+    - name: Test MySQL connection
+      if: matrix.database == 'mysql2'
+      run: mysqladmin ping -h 127.0.0.1 -u root -pmysql
+
     - name: Run tests
       run: bin/rspec
+
+    - name: Upload coverage to Codecov
+      if: matrix.ruby == '3.4' && matrix.database == 'sqlite3' && matrix.rails == '8.0.2'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage/coverage.xml
+        fail_ci_if_error: false
