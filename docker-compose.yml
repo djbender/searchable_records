@@ -1,0 +1,62 @@
+services:
+  test:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=postgresql
+      - POSTGRES_PORT=5432
+      - MYSQL_USER=derek
+      - MYSQL_PASSWORD=password
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    command: bin/test-databases
+    profiles:
+      - test
+
+  postgresql:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: searchable_records_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U postgres"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: searchable_records_test
+      MYSQL_USER: derek
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: "mysqladmin ping -h localhost -u derek -ppassword"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  postgres_data:
+  mysql_data:

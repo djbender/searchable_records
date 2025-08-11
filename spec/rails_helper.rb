@@ -4,9 +4,13 @@ ENV["RAILS_ENV"] = "test"
 
 # Intercept and filter warnings before Rails loads
 original_warn = Warning.method(:warn)
+IGNORED_WARNINGS = [
+  "assigned but unused variable - testEof",  # mail gem warnings
+  "benchmark.rb:.*: warning: too many arguments for format string"  # benchmark gem warnings
+].freeze
+
 Warning.define_singleton_method(:warn) do |message|
-  # Skip mail gem "assigned but unused variable - testEof" warnings
-  unless message.include?("assigned but unused variable - testEof")
+  unless IGNORED_WARNINGS.any? { |ignored| message.match?(ignored) }
     original_warn.call(message)
   end
 end

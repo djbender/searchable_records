@@ -38,30 +38,30 @@ MYSQL_RESULT=0
 run_tests "sqlite3" "SQLite" || SQLITE_RESULT=$?
 
 # Test PostgreSQL (if available)
-if command -v psql >/dev/null 2>&1 && pg_isready >/dev/null 2>&1; then
+if command -v pg_isready >/dev/null 2>&1 && pg_isready -h ${POSTGRES_HOST:-localhost} -p ${POSTGRES_PORT:-5432} >/dev/null 2>&1; then
     run_tests "postgresql" "PostgreSQL" || POSTGRESQL_RESULT=$?
 else
     echo -e "\n${RED}⚠️  PostgreSQL not available, skipping PostgreSQL tests${NC}"
     echo "To test with PostgreSQL:"
-    echo "1. Install PostgreSQL"
-    echo "2. Start PostgreSQL service"
+    echo "1. Install PostgreSQL client tools (pg_isready)"
+    echo "2. Start PostgreSQL service or container"
     echo "3. Ensure connection settings in spec/dummy/config/database.yml are correct"
 fi
 
 # Test MySQL (if available)
 if command -v mysql >/dev/null 2>&1; then
-    # Try to connect with user 'derek' (no password) as discovered during local testing
-    if mysql -u derek -e "SELECT 1" >/dev/null 2>&1; then
-        MYSQL_USER=derek MYSQL_PASSWORD="" run_tests "mysql2" "MySQL" || MYSQL_RESULT=$?
+    # Try to connect to MySQL server
+    if mysql -h ${MYSQL_HOST:-localhost} -P ${MYSQL_PORT:-3306} -u ${MYSQL_USER:-derek} -p${MYSQL_PASSWORD:-password} -e "SELECT 1" >/dev/null 2>&1; then
+        run_tests "mysql2" "MySQL" || MYSQL_RESULT=$?
     else
         echo -e "\n${RED}⚠️  MySQL not available or connection failed, skipping MySQL tests${NC}"
         echo "To test with MySQL:"
-        echo "1. Install MySQL or MariaDB"
-        echo "2. Start MySQL service"
-        echo "3. Ensure connection settings in spec/dummy/config/database.yml are correct"
+        echo "1. Start MySQL service or container"
+        echo "2. Ensure connection settings in spec/dummy/config/database.yml are correct"
+        echo "3. Set MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD environment variables if needed"
     fi
 else
-    echo -e "\n${RED}⚠️  MySQL not installed, skipping MySQL tests${NC}"
+    echo -e "\n${RED}⚠️  MySQL client not installed, skipping MySQL tests${NC}"
 fi
 
 # Summary
@@ -74,7 +74,7 @@ else
     echo -e "${RED}❌ SQLite tests failed${NC}"
 fi
 
-if command -v psql >/dev/null 2>&1 && pg_isready >/dev/null 2>&1; then
+if command -v pg_isready >/dev/null 2>&1 && pg_isready -h ${POSTGRES_HOST:-localhost} -p ${POSTGRES_PORT:-5432} >/dev/null 2>&1; then
     if [ $POSTGRESQL_RESULT -eq 0 ]; then
         echo -e "${GREEN}✅ PostgreSQL tests passed${NC}"
     else
@@ -82,7 +82,7 @@ if command -v psql >/dev/null 2>&1 && pg_isready >/dev/null 2>&1; then
     fi
 fi
 
-if command -v mysql >/dev/null 2>&1 && mysql -u derek -e "SELECT 1" >/dev/null 2>&1; then
+if command -v mysql >/dev/null 2>&1 && mysql -h ${MYSQL_HOST:-localhost} -P ${MYSQL_PORT:-3306} -u ${MYSQL_USER:-derek} -p${MYSQL_PASSWORD:-password} -e "SELECT 1" >/dev/null 2>&1; then
     if [ $MYSQL_RESULT -eq 0 ]; then
         echo -e "${GREEN}✅ MySQL tests passed${NC}"
     else
