@@ -8,6 +8,14 @@ test:
   port: <%= ENV.fetch('POSTGRES_PORT', 5432) %>
   pool: 5
   timeout: 5000
+  <% elsif ENV['DATABASE_ADAPTER'] == 'mysql2' %>
+  database: searchable_records_test
+  username: <%= ENV.fetch('MYSQL_USER', 'root') %>
+  password: <%= ENV.fetch('MYSQL_PASSWORD', 'mysql') %>
+  host: <%= ENV.fetch('MYSQL_HOST', 'localhost') %>
+  port: <%= ENV.fetch('MYSQL_PORT', 3306) %>
+  pool: 5
+  timeout: 5000
   <% else %>
   database: ":memory:"
   <% end %>
