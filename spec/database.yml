@@ -19,7 +19,7 @@ mysql2:
   database: searchable_records_test
   username: <%= ENV.fetch('MYSQL_USER', 'root') %>
   password: <%= ENV.fetch('MYSQL_PASSWORD', 'mysql') %>
-  host: <%= ENV.fetch('MYSQL_HOST', '127.0.0.1') %>
+  host: <%= ENV.fetch('MYSQL_HOST', 'localhost') %>
   port: <%= ENV.fetch('MYSQL_PORT', 3306) %>
   pool: 5
   timeout: 5000
