@@ -268,6 +268,72 @@ EXPLAIN SELECT * FROM users WHERE MATCH(name) AGAINST('john');
 EXPLAIN QUERY PLAN SELECT * FROM users WHERE name LIKE '%john%';
 ```
 
+## Command-Line Tools
+
+SearchableRecords includes command-line tools for development and testing:
+
+### Performance Testing
+
+Use the built-in performance testing tool:
+
+```bash
+# Show help for performance testing options
+bin/performance-test help
+
+# Run performance benchmarks
+bin/performance-test benchmark
+
+# Analyze query execution plans
+bin/performance-test explain
+
+# Compare different search strategies
+bin/performance-test compare
+```
+
+### Multi-Database Testing
+
+Test across all supported databases:
+
+```bash
+# Run tests against SQLite, PostgreSQL, and MySQL
+bin/test-databases
+
+# Test specific database only
+DATABASE_ADAPTER=postgresql bin/rspec
+DATABASE_ADAPTER=mysql2 bin/rspec
+```
+
+## Development
+
+### Setup
+
+```bash
+bundle install
+bin/rspec
+```
+
+### Testing
+
+- Uses RSpec for testing framework
+- Includes dummy Rails app for integration testing
+- Run tests: `bin/rspec`
+- Test all databases: `bin/test-databases`
+- PostgreSQL-specific tests: `DATABASE_ADAPTER=postgresql bin/rspec spec/postgresql_spec.rb`
+
+### Development Workflow
+
+1. Make changes to `lib/` files
+2. Add/update tests in `spec/`
+3. Run test suite with `bin/test-databases` to verify changes across databases
+4. Test database-specific features with appropriate adapter
+
+## Documentation
+
+For detailed information, see the comprehensive documentation:
+
+- **[Database Indexing Guide](docs/DATABASE_INDEXING.md)** - Complete guide to optimizing database indexes for search performance
+- **[Performance Guide](docs/PERFORMANCE.md)** - Detailed performance optimization strategies and benchmarking
+
 ## License
 
 The gem is available as open source under the terms of the MIT License.

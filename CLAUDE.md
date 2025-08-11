@@ -34,6 +34,8 @@ bin/rspec
 - `bin/` - Development scripts
   - `bin/performance-test` - Command-line performance testing
   - `bin/test-databases` - Multi-database test runner
+  - `bin/mutant` - Mutation testing script
+- `TODO.md` - Future enhancements and roadmap
 - `searchable_records.gemspec` - Gem specification
 
 ## Key Commands
@@ -71,3 +73,4 @@ bin/rspec
 ## Code standards
 - Always check codecoverage.
 - Do not run the mutation tests unless specifically asked and approved.
+- Mutation testing available via `bin/mutant` (use with caution as it's resource intensive).
