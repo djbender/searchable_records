@@ -1,10 +1,7 @@
 require "rails_helper"
 
 # PostgreSQL-specific tests
-RSpec.describe "SearchableRecords PostgreSQL Features", type: :integration do
-  before(:all) do
-    skip "PostgreSQL-specific tests" unless ENV['DATABASE_ADAPTER'] == 'postgresql'
-  end
+RSpec.describe "SearchableRecords PostgreSQL Features", type: :integration, database_adapter: :postgresql do
 
   include_context "database setup"
 

@@ -114,9 +114,7 @@ RSpec.describe SearchableRecords::Performance, type: :integration do
   end
 
   describe "database-specific behavior" do
-    it "handles PostgreSQL explain format" do
-      skip "PostgreSQL-specific test" unless ENV['DATABASE_ADAPTER'] == 'postgresql'
-
+    it "handles PostgreSQL explain format", database_adapter: :postgresql do
       output = capture_stdout do
         SearchableRecords::Performance.explain_search(TestModel, "User")
       end
@@ -124,14 +122,20 @@ RSpec.describe SearchableRecords::Performance, type: :integration do
       expect(output).to include("PostgreSQL Execution Plan:")
     end
 
-    it "handles SQLite explain format" do
-      skip "SQLite-specific test" unless ENV['DATABASE_ADAPTER'] == 'sqlite3' || ENV['DATABASE_ADAPTER'].nil?
-
+    it "handles SQLite explain format", database_adapter: :sqlite3 do
       output = capture_stdout do
         SearchableRecords::Performance.explain_search(TestModel, "User")
       end
 
       expect(output).to include("SQLite Query Plan:")
+    end
+
+    it "handles MySQL explain format", database_adapter: [:mysql2, :trilogy] do
+      output = capture_stdout do
+        SearchableRecords::Performance.explain_search(TestModel, "User")
+      end
+
+      expect(output).to include("MySQL Execution Plan:")
     end
   end
 

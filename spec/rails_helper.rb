@@ -33,6 +33,18 @@ RSpec.configure do |config|
     metadata[:type] = :model
   end
 
+  # Filter tests based on database adapter
+  current_adapter = ENV['DATABASE_ADAPTER']&.to_sym || :sqlite3
+  
+  # Exclude tests that don't match the current database adapter
+  config.filter_run_excluding database_adapter: ->(adapter) {
+    if adapter.is_a?(Array)
+      !adapter.include?(current_adapter)
+    else
+      adapter != current_adapter
+    end
+  }
+
   # Suppress ActiveRecord migration logging
   config.before(:suite) do
     ActiveRecord::Migration.verbose = false
