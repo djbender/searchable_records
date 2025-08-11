@@ -35,8 +35,8 @@ module SearchableRecords
             conditions << "#{table_name}.#{column_name} LIKE :#{param_key}"
             params[param_key] = "%#{query}%"
           when 'mysql2', 'trilogy'
-            # MySQL: Use COLLATE for case-sensitive comparison (more efficient than BINARY)
-            conditions << "#{table_name}.#{column_name} LIKE :#{param_key} COLLATE utf8mb4_bin"
+            # MySQL: Use BINARY for case-sensitive comparison (compatible with all charsets)
+            conditions << "BINARY #{table_name}.#{column_name} LIKE :#{param_key}"
             params[param_key] = "%#{query}%"
           else
             # Fallback: Use standard LIKE
@@ -51,8 +51,8 @@ module SearchableRecords
             conditions << "#{table_name}.#{column_name} ILIKE :#{param_key}"
             params[param_key] = "%#{query}%"
           when 'mysql2', 'trilogy'
-            # MySQL: Use COLLATE for case-insensitive search
-            conditions << "#{table_name}.#{column_name} LIKE :#{param_key} COLLATE utf8mb4_unicode_ci"
+            # MySQL: Use default case-insensitive behavior (most collations are case-insensitive by default)
+            conditions << "#{table_name}.#{column_name} LIKE :#{param_key}"
             params[param_key] = "%#{query}%"
           else
             # SQLite and other databases: Use LOWER() for case-insensitive search

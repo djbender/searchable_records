@@ -23,18 +23,12 @@ module DatabaseAdapter
   end
   
   def self.load_database_config
-    config_file = File.join(File.dirname(__FILE__), '..', 'database.yml')
-    configs = YAML.load_file(config_file, aliases: true)
-    config = configs[current_adapter]
+    config_file = File.join(File.dirname(__FILE__), '..', 'dummy', 'config', 'database.yml')
+    erb = ERB.new(File.read(config_file))
+    configs = YAML.load(erb.result, aliases: true)
+    config = configs['test']
     
-    raise "Database configuration not found for adapter: #{current_adapter}" unless config
-    
-    # ERB processing for environment variables
-    config.each do |key, value|
-      if value.is_a?(String) && value.include?('<%=')
-        config[key] = ERB.new(value).result
-      end
-    end
+    raise "Database configuration not found in dummy app" unless config
     
     config.symbolize_keys
   end

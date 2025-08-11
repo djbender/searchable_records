@@ -494,7 +494,7 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
       expect(case_sensitive_model.search("Test")).not_to be_empty
     end
 
-    it "handles MySQL2 case-sensitive search with COLLATE" do
+    it "handles MySQL2 case-sensitive search with BINARY" do
       case_sensitive_model = Class.new(ActiveRecord::Base) do
         self.table_name = "test_models"
         searchable case_sensitive: true
@@ -502,10 +502,10 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
 
       allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('mysql2')
       relation = case_sensitive_model.search("Test")
-      expect(relation.to_sql).to include("utf8mb4_bin")
+      expect(relation.to_sql).to include("BINARY")
     end
 
-    it "handles Trilogy case-sensitive search with COLLATE" do
+    it "handles Trilogy case-sensitive search with BINARY" do
       case_sensitive_model = Class.new(ActiveRecord::Base) do
         self.table_name = "test_models"
         searchable case_sensitive: true
@@ -513,7 +513,7 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
 
       allow(case_sensitive_model.connection).to receive(:adapter_name).and_return('trilogy')
       relation = case_sensitive_model.search("Test")
-      expect(relation.to_sql).to include("utf8mb4_bin")
+      expect(relation.to_sql).to include("BINARY")
     end
 
     it "handles unknown adapter case-sensitive search with fallback LIKE" do
@@ -537,7 +537,7 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
       expect(relation.to_sql).to include("ILIKE")
     end
 
-    it "handles MySQL2 case-insensitive search with COLLATE" do
+    it "handles MySQL2 case-insensitive search with default behavior" do
       case_insensitive_model = Class.new(ActiveRecord::Base) do
         self.table_name = "test_models"
         searchable case_sensitive: false
@@ -545,10 +545,11 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
 
       allow(case_insensitive_model.connection).to receive(:adapter_name).and_return('mysql2')
       relation = case_insensitive_model.search("test")
-      expect(relation.to_sql).to include("utf8mb4_unicode_ci")
+      expect(relation.to_sql).to include("LIKE")
+      expect(relation.to_sql).not_to include("BINARY")
     end
 
-    it "handles Trilogy case-insensitive search with COLLATE" do
+    it "handles Trilogy case-insensitive search with default behavior" do
       case_insensitive_model = Class.new(ActiveRecord::Base) do
         self.table_name = "test_models"
         searchable case_sensitive: false
@@ -556,7 +557,8 @@ RSpec.describe "SearchableRecords Integration", type: :integration do
 
       allow(case_insensitive_model.connection).to receive(:adapter_name).and_return('trilogy')
       relation = case_insensitive_model.search("test")
-      expect(relation.to_sql).to include("utf8mb4_unicode_ci")
+      expect(relation.to_sql).to include("LIKE")
+      expect(relation.to_sql).not_to include("BINARY")
     end
 
     it "handles unknown adapter case-insensitive search with LOWER fallback" do

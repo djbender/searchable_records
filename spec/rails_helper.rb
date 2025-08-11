@@ -34,72 +34,14 @@ RSpec.configure do |config|
     ActiveRecord::Migration.verbose = false
     
     # Create database if needed
-    if ENV['DATABASE_ADAPTER'] == 'postgresql'
-      RSpec.create_postgresql_database_if_needed
-    elsif ENV['DATABASE_ADAPTER'] == 'mysql2'
-      DatabaseAdapter.create_database_if_needed
-    end
+    DatabaseAdapter.create_database_if_needed
   end
   
   config.after(:suite) do
     # Clean up database if in CI or requested
     if ENV['CI']
-      if ENV['DATABASE_ADAPTER'] == 'postgresql'
-        RSpec.drop_postgresql_database_if_needed
-      elsif ENV['DATABASE_ADAPTER'] == 'mysql2'
-        DatabaseAdapter.drop_database_if_needed
-      end
+      DatabaseAdapter.drop_database_if_needed
     end
   end
 end
 
-# Define PostgreSQL database management methods
-module RSpec
-  def self.create_postgresql_database_if_needed
-    database_name = 'searchable_records_test'
-    
-    admin_config = {
-      'adapter' => 'postgresql',
-      'database' => 'postgres',
-      'username' => ENV.fetch('POSTGRES_USER', 'postgres'),
-      'password' => ENV.fetch('POSTGRES_PASSWORD', 'postgres'),
-      'host' => ENV.fetch('POSTGRES_HOST', 'localhost'),
-      'port' => ENV.fetch('POSTGRES_PORT', 5432)
-    }
-    
-    begin
-      ActiveRecord::Base.establish_connection(admin_config)
-      ActiveRecord::Base.connection.execute("CREATE DATABASE #{database_name}")
-      puts "Created PostgreSQL test database: #{database_name}"
-    rescue ActiveRecord::StatementInvalid => e
-      if e.message.include?("already exists")
-        puts "PostgreSQL test database already exists: #{database_name}"
-      else
-        raise e
-      end
-    ensure
-      # Let Rails reconnect to the test database naturally
-    end
-  end
-  
-  def self.drop_postgresql_database_if_needed  
-    database_name = 'searchable_records_test'
-    
-    admin_config = {
-      'adapter' => 'postgresql',
-      'database' => 'postgres',
-      'username' => ENV.fetch('POSTGRES_USER', 'postgres'),
-      'password' => ENV.fetch('POSTGRES_PASSWORD', 'postgres'),
-      'host' => ENV.fetch('POSTGRES_HOST', 'localhost'),
-      'port' => ENV.fetch('POSTGRES_PORT', 5432)
-    }
-    
-    begin
-      ActiveRecord::Base.establish_connection(admin_config)
-      ActiveRecord::Base.connection.execute("DROP DATABASE IF EXISTS #{database_name}")
-      puts "Dropped PostgreSQL test database: #{database_name}"
-    rescue ActiveRecord::StatementInvalid => e
-      puts "Error dropping PostgreSQL database: #{e.message}"
-    end
-  end
-end

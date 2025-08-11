@@ -32,6 +32,7 @@ run_tests() {
 # Track results
 SQLITE_RESULT=0
 POSTGRESQL_RESULT=0
+MYSQL_RESULT=0
 
 # Test SQLite (default)
 run_tests "sqlite3" "SQLite" || SQLITE_RESULT=$?
@@ -45,6 +46,22 @@ else
     echo "1. Install PostgreSQL"
     echo "2. Start PostgreSQL service"
     echo "3. Ensure connection settings in spec/dummy/config/database.yml are correct"
+fi
+
+# Test MySQL (if available)
+if command -v mysql >/dev/null 2>&1; then
+    # Try to connect with user 'derek' (no password) as discovered during local testing
+    if mysql -u derek -e "SELECT 1" >/dev/null 2>&1; then
+        MYSQL_USER=derek MYSQL_PASSWORD="" run_tests "mysql2" "MySQL" || MYSQL_RESULT=$?
+    else
+        echo -e "\n${RED}⚠️  MySQL not available or connection failed, skipping MySQL tests${NC}"
+        echo "To test with MySQL:"
+        echo "1. Install MySQL or MariaDB"
+        echo "2. Start MySQL service"
+        echo "3. Ensure connection settings in spec/dummy/config/database.yml are correct"
+    fi
+else
+    echo -e "\n${RED}⚠️  MySQL not installed, skipping MySQL tests${NC}"
 fi
 
 # Summary
@@ -65,8 +82,16 @@ if command -v psql >/dev/null 2>&1 && pg_isready >/dev/null 2>&1; then
     fi
 fi
 
+if command -v mysql >/dev/null 2>&1 && mysql -u derek -e "SELECT 1" >/dev/null 2>&1; then
+    if [ $MYSQL_RESULT -eq 0 ]; then
+        echo -e "${GREEN}✅ MySQL tests passed${NC}"
+    else
+        echo -e "${RED}❌ MySQL tests failed${NC}"
+    fi
+fi
+
 # Exit with error if any tests failed
-if [ $SQLITE_RESULT -ne 0 ] || [ $POSTGRESQL_RESULT -ne 0 ]; then
+if [ $SQLITE_RESULT -ne 0 ] || [ $POSTGRESQL_RESULT -ne 0 ] || [ $MYSQL_RESULT -ne 0 ]; then
     exit 1
 fi
 
