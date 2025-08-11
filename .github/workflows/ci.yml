@@ -150,4 +150,6 @@ jobs:
         bundler-cache: true
 
     - name: Run tests
-      run: bin/rspec
+      run: |
+        mysqladmin ping -h localhost -u root -pmysql
+        bin/rspec
