@@ -1,5 +1,7 @@
 # SearchableRecords
 
+[![CI](https://github.com/djbender/searchable_records/actions/workflows/ci.yml/badge.svg)](https://github.com/djbender/searchable_records/actions/workflows/ci.yml)
+
 A Rails gem that adds substring search functionality to ActiveRecord models through a simple `searchable` class method.
 
 ## Installation
