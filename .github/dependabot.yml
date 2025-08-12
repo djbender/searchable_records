@@ -11,25 +11,25 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  - package-ecosystem: "bundler"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      time: "20:00"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+  # - package-ecosystem: "bundler"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "daily"
+  #     time: "20:00"
+  #   open-pull-requests-limit: 5
+  #   commit-message:
+  #     prefix: "chore"
+  #     include: "scope"
 
-  - package-ecosystem: "bundler"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      time: "20:00"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+  # - package-ecosystem: "bundler"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "daily"
+  #     time: "20:00"
+  #   open-pull-requests-limit: 5
+  #   commit-message:
+  #     prefix: "chore"
+  #     include: "scope"
 
   - package-ecosystem: "github-actions"
     directory: "/"
