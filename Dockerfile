@@ -1,4 +1,4 @@
-FROM ruby:3-slim
+FROM ruby:4-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install --yes --no-install-recommends \
