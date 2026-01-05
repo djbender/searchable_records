@@ -20,6 +20,9 @@ jobs:
           # Rails 7.x doesn't support Ruby 4.0
           - ruby: '4.0'
             rails: '7.2.2'
+          # Rails main requires Ruby >= 3.3
+          - ruby: '3.2'
+            rails: 'main'
 
     services:
       postgres:
