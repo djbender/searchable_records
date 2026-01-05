@@ -5,4 +5,4 @@ gemspec
 gem "benchmark", "~> 0.5.0"
 gem 'mutant-rspec', '~> 0.13.3'
 gem 'rails', '~> 8.0.0'
-gem 'simplecov-cobertura', '~> 2.1'
+gem 'simplecov-cobertura', '~> 3.1'

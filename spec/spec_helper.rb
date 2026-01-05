@@ -3,7 +3,7 @@ require "bundler/setup"
 # Start SimpleCov before loading application code (skip during mutation testing)
 unless ENV['MUTANT']
   require "simplecov"
-  if ENV['CI']
+  if ENV['COVERAGE_FORMAT'] == 'cobertura'
     require "simplecov-cobertura"
     SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
   end
