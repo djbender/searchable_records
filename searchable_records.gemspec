@@ -9,14 +9,13 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/yourusername/searchable_records"
   spec.license       = "MIT"
 
-  spec.required_ruby_version = ">= 2.7.0"
+  spec.required_ruby_version = ">= 3.2.0"
 
   spec.files = Dir.glob("lib/**/*") + %w[README.md Gemfile searchable_records.gemspec]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activerecord", ">= 6.0"
 
-  spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rspec", "~> 3.12"
   spec.add_development_dependency "rspec-rails", "~> 6.0"
   spec.add_development_dependency "sqlite3", ">= 2.0.4"

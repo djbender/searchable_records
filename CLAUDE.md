@@ -10,7 +10,7 @@ bin/rspec
 ```
 
 ## Testing
-SearchableRecords has comprehensive test coverage with **54 Ruby/Rails/Database combinations** in CI:
+SearchableRecords has comprehensive test coverage with **33 Ruby/Rails/Database combinations** in CI:
 
 ### Test Framework
 - Uses RSpec for testing framework with custom `:integration` type
@@ -19,16 +19,15 @@ SearchableRecords has comprehensive test coverage with **54 Ruby/Rails/Database 
 - Shared database setup in `spec/support/database_setup.rb`
 
 ### Supported Versions
-- **Ruby**: 3.0, 3.1, 3.2, 3.3, 3.4
-- **Rails**: 7.1.5, 7.2.2, 8.0.2, main branch
+- **Ruby**: 3.2, 3.3, 3.4, 4.0
+- **Rails**: 7.2.2, 8.0.2, main branch
 - **Databases**: SQLite, PostgreSQL (with trigram extension), MySQL
 
 ### CI Testing Matrix
 Our GitHub Actions CI tests every valid Ruby/Rails/Database combination:
-- **Rails 7.1.5**: 15 combinations (Ruby 3.0-3.4 × 3 databases)
-- **Rails 7.2.2**: 12 combinations (Ruby 3.1-3.4 × 3 databases)
-- **Rails 8.0.2**: 9 combinations (Ruby 3.2-3.4 × 3 databases)  
-- **Rails main**: 9 combinations (Ruby 3.2-3.4 × 3 databases)
+- **Rails 7.2.2**: 9 combinations (Ruby 3.2-3.4 × 3 databases)
+- **Rails 8.0.2**: 12 combinations (Ruby 3.2-4.0 × 3 databases)
+- **Rails main**: 12 combinations (Ruby 3.2-4.0 × 3 databases)
 
 ### Docker Support
 - PostgreSQL container includes pg_trgm extension for trigram index testing
@@ -63,13 +62,13 @@ Our GitHub Actions CI tests every valid Ruby/Rails/Database combination:
 - **Test (MySQL)**: `DATABASE_ADAPTER=mysql2 bin/rspec`
 - **Test all databases**: `bin/test-databases`
 - **PostgreSQL-only tests**: `DATABASE_ADAPTER=postgresql bin/rspec spec/postgresql_spec.rb`
-- **Docker testing**: `docker-compose run test` (includes all 54 combinations)
+- **Docker testing**: `docker-compose run test` (includes all 33 combinations)
 
 ### Development
 - **Performance testing**: `bin/performance-test help`
 - **Console**: `bundle exec rails console` (from spec/dummy)
 - **Install locally**: `gem build searchable_records.gemspec && gem install searchable_records-*.gem`
-- **CI matrix testing**: Automatically runs 54 Ruby/Rails/Database combinations on every PR
+- **CI matrix testing**: Automatically runs 33 Ruby/Rails/Database combinations on every PR
 
 ## Development Workflow
 1. Make changes to `lib/` files

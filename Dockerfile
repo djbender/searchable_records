@@ -1,4 +1,5 @@
-FROM ruby:4-slim
+ARG RUBY_VERSION="4.0"
+FROM ruby:${RUBY_VERSION}-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install --yes --no-install-recommends \

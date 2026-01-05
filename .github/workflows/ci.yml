@@ -13,149 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # Rails 7.1.5 with all Ruby/Database combinations (Ruby 3.0+)
-          - ruby: '3.0'
-            database: 'sqlite3'
-            rails: '7.1.5'
-          - ruby: '3.0'
-            database: 'postgresql'
-            rails: '7.1.5'
-          - ruby: '3.0'
-            database: 'mysql2'
-            rails: '7.1.5'
-          - ruby: '3.1'
-            database: 'sqlite3'
-            rails: '7.1.5'
-          - ruby: '3.1'
-            database: 'postgresql'
-            rails: '7.1.5'
-          - ruby: '3.1'
-            database: 'mysql2'
-            rails: '7.1.5'
-          - ruby: '3.2'
-            database: 'sqlite3'
-            rails: '7.1.5'
-          - ruby: '3.2'
-            database: 'postgresql'
-            rails: '7.1.5'
-          - ruby: '3.2'
-            database: 'mysql2'
-            rails: '7.1.5'
-          - ruby: '3.3'
-            database: 'sqlite3'
-            rails: '7.1.5'
-          - ruby: '3.3'
-            database: 'postgresql'
-            rails: '7.1.5'
-          - ruby: '3.3'
-            database: 'mysql2'
-            rails: '7.1.5'
-          - ruby: '3.4'
-            database: 'sqlite3'
-            rails: '7.1.5'
-          - ruby: '3.4'
-            database: 'postgresql'
-            rails: '7.1.5'
-          - ruby: '3.4'
-            database: 'mysql2'
-            rails: '7.1.5'
-          
-          # Rails 7.2.2 with all Ruby/Database combinations (Ruby 3.1+)
-          - ruby: '3.1'
-            database: 'sqlite3'
+        ruby: ['3.2', '3.3', '3.4', '4.0']
+        rails: ['7.2.2', '8.0.2', 'main']
+        database: ['sqlite3', 'postgresql', 'mysql2']
+        exclude:
+          # Rails 7.x doesn't support Ruby 4.0
+          - ruby: '4.0'
             rails: '7.2.2'
-          - ruby: '3.1'
-            database: 'postgresql'
-            rails: '7.2.2'
-          - ruby: '3.1'
-            database: 'mysql2'
-            rails: '7.2.2'
-          - ruby: '3.2'
-            database: 'sqlite3'
-            rails: '7.2.2'
-          - ruby: '3.2'
-            database: 'postgresql'
-            rails: '7.2.2'
-          - ruby: '3.2'
-            database: 'mysql2'
-            rails: '7.2.2'
-          - ruby: '3.3'
-            database: 'sqlite3'
-            rails: '7.2.2'
-          - ruby: '3.3'
-            database: 'postgresql'
-            rails: '7.2.2'
-          - ruby: '3.3'
-            database: 'mysql2'
-            rails: '7.2.2'
-          - ruby: '3.4'
-            database: 'sqlite3'
-            rails: '7.2.2'
-          - ruby: '3.4'
-            database: 'postgresql'
-            rails: '7.2.2'
-          - ruby: '3.4'
-            database: 'mysql2'
-            rails: '7.2.2'
-          
-          # Rails 8.0.2 with all Ruby/Database combinations (Ruby 3.2+)
-          - ruby: '3.2'
-            database: 'sqlite3'
-            rails: '8.0.2'
-          - ruby: '3.2'
-            database: 'postgresql'
-            rails: '8.0.2'
-          - ruby: '3.2'
-            database: 'mysql2'
-            rails: '8.0.2'
-          - ruby: '3.3'
-            database: 'sqlite3'
-            rails: '8.0.2'
-          - ruby: '3.3'
-            database: 'postgresql'
-            rails: '8.0.2'
-          - ruby: '3.3'
-            database: 'mysql2'
-            rails: '8.0.2'
-          - ruby: '3.4'
-            database: 'sqlite3'
-            rails: '8.0.2'
-          - ruby: '3.4'
-            database: 'postgresql'
-            rails: '8.0.2'
-          - ruby: '3.4'
-            database: 'mysql2'
-            rails: '8.0.2'
-          
-          # Rails main with all Ruby/Database combinations (Ruby 3.2+)
-          - ruby: '3.2'
-            database: 'sqlite3'
-            rails: 'main'
-          - ruby: '3.2'
-            database: 'postgresql'
-            rails: 'main'
-          - ruby: '3.2'
-            database: 'mysql2'
-            rails: 'main'
-          - ruby: '3.3'
-            database: 'sqlite3'
-            rails: 'main'
-          - ruby: '3.3'
-            database: 'postgresql'
-            rails: 'main'
-          - ruby: '3.3'
-            database: 'mysql2'
-            rails: 'main'
-          - ruby: '3.4'
-            database: 'sqlite3'
-            rails: 'main'
-          - ruby: '3.4'
-            database: 'postgresql'
-            rails: 'main'
-          - ruby: '3.4'
-            database: 'mysql2'
-            rails: 'main'
 
     services:
       postgres:
@@ -211,13 +75,8 @@ jobs:
             ;;
         esac
 
-    - name: Select base Gemfile for Ruby version
-      run: |
-        if [[ "${{ matrix.ruby }}" == "3.0" || "${{ matrix.ruby }}" == "3.1" ]]; then
-          echo "BASE_GEMFILE=Gemfile.ruby-3.0" >> $GITHUB_ENV
-        else
-          echo "BASE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
-        fi
+    - name: Select base Gemfile
+      run: echo "BASE_GEMFILE=Gemfile.ruby-3.2" >> $GITHUB_ENV
 
     - name: Set up Ruby ${{ matrix.ruby }}
       uses: ruby/setup-ruby@v1
@@ -228,14 +87,14 @@ jobs:
       run: |
         # Start with base Gemfile content (excluding Rails line)
         grep -v "gem 'rails'" $BASE_GEMFILE > Gemfile.test
-        
+
         # Add Rails version
         if [[ "${{ matrix.rails }}" == "main" ]]; then
           echo "gem 'rails', git: 'https://github.com/rails/rails.git', branch: 'main'" >> Gemfile.test
         else
           echo "gem 'rails', '~> ${{ matrix.rails }}'" >> Gemfile.test
         fi
-        
+
         echo "BUNDLE_GEMFILE=Gemfile.test" >> $GITHUB_ENV
 
     - name: Install dependencies

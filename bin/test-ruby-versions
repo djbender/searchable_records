@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -exuo pipefail
+
+RUBY_VERSIONS=("3.2" "3.3" "3.4" "4.0")
+BUILD_ONLY=false
+
+if [[ "${1:-}" == "--build-only" ]]; then
+  BUILD_ONLY=true
+fi
+
+for v in "${RUBY_VERSIONS[@]}"; do
+  echo "=== Building Ruby $v ==="
+  RUBY_VERSION=$v docker compose build test
+  if [[ "$BUILD_ONLY" == false ]]; then
+    echo "=== Testing Ruby $v ==="
+    RUBY_VERSION=$v docker compose run --rm test
+  fi
+done
+
+if [[ "$BUILD_ONLY" == true ]]; then
+  echo "=== All Ruby images built ==="
+else
+  echo "=== All Ruby versions passed ==="
+fi

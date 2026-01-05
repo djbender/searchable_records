@@ -88,17 +88,16 @@ User.search("JOHN")  # Case-insensitive search only in name field
 - **Database-optimized**: Uses database-specific features for best performance
 - **Secure**: Uses parameterized queries to prevent SQL injection
 - **Type-safe**: Only searches appropriate column types (string, text)
-- **Comprehensive testing**: 54 Ruby/Rails/Database combinations tested
+- **Comprehensive testing**: 33 Ruby/Rails/Database combinations tested
 
 ## Compatibility
 
 SearchableRecords is thoroughly tested across a comprehensive compatibility matrix:
 
 ### Ruby Versions
-- Ruby 3.0, 3.1, 3.2, 3.3, 3.4
+- Ruby 3.2, 3.3, 3.4, 4.0
 
 ### Rails Versions
-- **Rails 7.1.5** (security-supported until October 2025)
 - **Rails 7.2.2** (bug fixes until August 2025, security until August 2026)
 - **Rails 8.0.2** (latest stable)
 - **Rails main** (development branch for early compatibility)
@@ -109,7 +108,7 @@ SearchableRecords is thoroughly tested across a comprehensive compatibility matr
 - **MySQL 8.0+** (mysql2 gem) with full-text search optimization
 
 ### Testing Matrix
-Our CI runs **54 test combinations** covering every supported Ruby/Rails/Database combination to ensure maximum compatibility and reliability.
+Our CI runs **33 test combinations** covering every supported Ruby/Rails/Database combination to ensure maximum compatibility and reliability.
 
 ## Examples
 
@@ -334,13 +333,33 @@ bundle install
 bin/rspec
 ```
 
+### Gemfile Structure
+
+This project contains multiple Gemfiles:
+
+- `Gemfile` - Primary development Gemfile (Ruby 4.0+)
+- `Gemfile.ruby-3.2` - Base Gemfile for CI matrix builds; CI strips the Rails line and injects matrix-specific versions
+
+### Testing Multiple Ruby Versions
+
+Test against all supported Ruby versions locally using Docker:
+
+```bash
+bin/test-ruby-versions              # build and test Ruby 3.2, 3.3, 3.4, 4.0
+bin/test-ruby-versions --build-only # build images only
+
+# Test single version
+RUBY_VERSION=3.2 docker compose build test
+RUBY_VERSION=3.2 docker compose run --rm test
+```
+
 ### Testing
 
-SearchableRecords has comprehensive test coverage with **54 test combinations** in CI:
+SearchableRecords has comprehensive test coverage with **33 test combinations** in CI:
 
 - **Testing Framework**: RSpec with integration tests using dummy Rails app
-- **Ruby Versions**: 3.0, 3.1, 3.2, 3.3, 3.4
-- **Rails Versions**: 7.1.5, 7.2.2, 8.0.2, main branch
+- **Ruby Versions**: 3.2, 3.3, 3.4, 4.0
+- **Rails Versions**: 7.2.2, 8.0.2, main branch
 - **Database Adapters**: SQLite, PostgreSQL, MySQL
 
 #### Local Testing Commands
@@ -366,10 +385,9 @@ docker-compose run test
 #### CI Matrix Coverage
 
 Our GitHub Actions CI automatically tests all combinations:
-- **15 combinations**: Rails 7.1.5 × Ruby 3.0-3.4 × 3 databases
-- **12 combinations**: Rails 7.2.2 × Ruby 3.1-3.4 × 3 databases  
-- **9 combinations**: Rails 8.0.2 × Ruby 3.2-3.4 × 3 databases
-- **9 combinations**: Rails main × Ruby 3.2-3.4 × 3 databases
+- **9 combinations**: Rails 7.2.2 × Ruby 3.2-3.4 × 3 databases
+- **12 combinations**: Rails 8.0.2 × Ruby 3.2-4.0 × 3 databases
+- **12 combinations**: Rails main × Ruby 3.2-4.0 × 3 databases
 
 ### Development Workflow
 
