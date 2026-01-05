@@ -338,7 +338,7 @@ bin/rspec
 This project contains multiple Gemfiles:
 
 - `Gemfile` - Primary development Gemfile (Ruby 4.0+)
-- `Gemfile.ruby-3.2` - Base Gemfile for CI matrix builds; CI strips the Rails line and injects matrix-specific versions
+- `Gemfile.ci` - Base Gemfile for CI matrix builds; CI strips the Rails line and injects matrix-specific versions
 
 ### Testing Multiple Ruby Versions
 
