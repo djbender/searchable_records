@@ -1,3 +1,4 @@
+# Gems don't commit lockfiles - consumers control their own dependency versions
 /Gemfile*.lock
 /.claude
 
