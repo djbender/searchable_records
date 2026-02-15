@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activerecord", ">= 6.0"
 
   spec.add_development_dependency "rspec", "~> 3.12"
-  spec.add_development_dependency "rspec-rails", "~> 6.0"
+  spec.add_development_dependency "rspec-rails", "~> 8.0"
   spec.add_development_dependency "sqlite3", ">= 2.0.4"
   spec.add_development_dependency "pg", "~> 1.5"
   spec.add_development_dependency "mysql2", "~> 0.5"
